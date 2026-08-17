@@ -1,0 +1,3 @@
+# Test/development dependencies (separate from runtime requirements).
+pytest>=8,<9
+httpx>=0.27,<1

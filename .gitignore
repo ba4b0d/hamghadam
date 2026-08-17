@@ -5,3 +5,6 @@ app/build/
 *.iml
 local.properties
 .DS_Store
+secrets/
+*.json
+*.db
