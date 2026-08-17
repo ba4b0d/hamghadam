@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" role="img" aria-labelledby="title desc">
+  <title id="title">How HamGhadam works</title>
+  <desc id="desc">Watches sync health data to Health Connect on Android; the HamGhadam app reads steps, sleep and heart rate; the FastAPI backend stores scores, runs leaderboards, and sends FCM push notifications; friends join challenges via invites.</desc>
+  <defs>
+    <linearGradient id="arrow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F15B2A"/>
+      <stop offset="1" stop-color="#FFBA08"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Headline -->
+  <text x="60" y="64" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="40" font-weight="700" fill="#2A1E16">How it works</text>
+  <text x="60" y="102" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="#8A6F5C">Closed loop: watch → Health Connect → app → backend → leaderboard &amp; push.</text>
+
+  <!-- Node 1: Watches -->
+  <rect x="60" y="150" width="240" height="220" rx="28" fill="#FFF7EC" stroke="#F15B2A" stroke-width="3"/>
+  <text x="180" y="190" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600" fill="#F15B2A">Your watch</text>
+  <text x="180" y="228" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">Samsung · Google / Pixel</text>
+  <text x="180" y="256" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">Nothing / CMF · Fitbit</text>
+  <g fill="#FFD166">
+    <path d="M120 300 C100 320 95 350 115 364 C124 370 136 372 146 366 C166 356 172 328 168 306 Z"/>
+    <path d="M170 262 C150 282 145 312 165 326 C174 332 186 334 196 328 C212 318 216 294 212 272 Z"/>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path d="M300 260 L380 260" stroke="url(#arrow)" stroke-width="8" stroke-linecap="round" marker-end="none"/>
+  <polygon points="376,252 392,260 376,268" fill="#F15B2A"/>
+
+  <!-- Node 2: Health Connect -->
+  <rect x="392" y="150" width="240" height="220" rx="28" fill="#FFF7EC" stroke="#FFBA08" stroke-width="3"/>
+  <text x="512" y="190" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600" fill="#B8860B">Health Connect</text>
+  <text x="512" y="228" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">One Android API to read</text>
+  <text x="512" y="256" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">steps · sleep · heart rate</text>
+  <text x="512" y="320" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#8A6F5C">agree on one source of truth</text>
+
+  <!-- Arrow 2 -->
+  <path d="M632 260 L712 260" stroke="url(#arrow)" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="708,252 724,260 708,268" fill="#F15B2A"/>
+
+  <!-- Node 3: App + Backend -->
+  <rect x="724" y="150" width="240" height="220" rx="28" fill="#FFF7EC" stroke="#F15B2A" stroke-width="3"/>
+  <text x="844" y="190" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600" fill="#F15B2A">HamGhadam</text>
+  <text x="844" y="228" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">Android app + FastAPI</text>
+  <text x="844" y="256" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" fill="#2A1E16">dashboard · profile · friends</text>
+  <text x="844" y="320" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#8A6F5C">per-user local day scoring</text>
+
+  <!-- Arrow 3 down -->
+  <path d="M964 260 L1044 260" stroke="url(#arrow)" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="1040,252 1056,260 1040,268" fill="#F15B2A"/>
+
+  <!-- Node 4: Challenges -->
+  <rect x="1056" y="150" width="110" height="220" rx="28" fill="#2A1E16"/>
+  <text x="1111" y="228" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#FFD166">Challenges</text>
+  <text x="1111" y="266" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#FFFFFF">leaderboards</text>
+  <text x="1111" y="294" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#FFFFFF">invites</text>
+  <text x="1111" y="322" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" fill="#FFFFFF">FCM push</text>
+
+  <!-- Up arrow: push back to phone -->
+  <path d="M1111 150 L1111 96" stroke="#F15B2A" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <polygon points="1103,102 1111,86 1119,102" fill="#F15B2A"/>
+  <text x="1111" y="76" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#8A6F5C">beat-you push</text>
+</svg>

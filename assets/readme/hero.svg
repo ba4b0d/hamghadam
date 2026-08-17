@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="100%" role="img" aria-labelledby="title desc">
+  <title id="title">HamGhadam همقدم — Walk together. One app for every watch.</title>
+  <desc id="desc">HamGhadam unifies health data from Samsung, Google, Nothing and Fitbit watches through Health Connect, then turns steps into friendly challenges.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFBA08"/>
+      <stop offset="1" stop-color="#F15B2A"/>
+    </linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset="1" stop-color="#FFD166"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Warm rounded backdrop -->
+  <rect x="20" y="20" width="1160" height="400" rx="48" fill="url(#bg)"/>
+
+  <!-- Motif — two friends walking in step (from hamghadam-logo.svg, mirrored right block) -->
+  <g fill="url(#light)" opacity="0.28">
+    <path d="M90 300 C60 332 50 384 82 408 C96 419 116 423 134 412 C169 392 182 338 174 300 Z" transform="rotate(-14 126 356)"/>
+    <path d="M178 232 C148 264 138 316 170 340 C184 351 204 355 222 344 C248 322 256 288 250 250 Z" transform="rotate(6 212 300)"/>
+  </g>
+  <g fill="url(#light)" opacity="0.95">
+    <path d="M860 316 C830 348 820 400 852 424 C866 435 886 439 904 428 C939 408 952 354 944 316 Z" transform="rotate(-14 896 372)"/>
+    <path d="M948 248 C918 280 908 332 940 356 C954 367 974 371 992 360 C1018 338 1026 304 1020 266 Z" transform="rotate(6 982 304)"/>
+  </g>
+
+  <!-- Shared step line -->
+  <path d="M150 412 C400 380 800 380 1050 412" fill="none" stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="1058" cy="264" r="12" fill="#FFFFFF" opacity="0.85"/>
+  <circle cx="1104" cy="252" r="8" fill="#FFFFFF" opacity="0.55"/>
+  <circle cx="1090" cy="312" r="7" fill="#FFFFFF" opacity="0.5"/>
+
+  <!-- Copy -->
+  <text x="70" y="120" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="64" font-weight="700" fill="#2A1E16" letter-spacing="0.5">HamGhadam <tspan fill="#FFFFFF">همقدم</tspan></text>
+  <text x="72" y="196" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="34" font-weight="500" fill="#2A1E16">Walk together. One app for every watch.</text>
+  <text x="72" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" fill="#2A1E16" opacity="0.85">Steps from Samsung, Google, Nothing &amp; Fitbit — unified through Health Connect,</text>
+  <text x="72" y="302" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" fill="#2A1E16" opacity="0.85">then turned into friendly step challenges with live leaderboards and push alerts.</text>
+
+  <!-- Small stat chips -->
+  <rect x="72" y="336" width="196" height="56" rx="28" fill="#2A1E16" opacity="0.9"/>
+  <text x="170" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#FFFFFF">Health Connect</text>
+  <rect x="288" y="336" width="150" height="56" rx="28" fill="#FFFFFF" opacity="0.90"/>
+  <text x="363" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#F15B2A">FastAPI</text>
+  <rect x="458" y="336" width="170" height="56" rx="28" fill="#2A1E16" opacity="0.9"/>
+  <text x="543" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#FFFFFF">FCM Push</text>
+</svg>
