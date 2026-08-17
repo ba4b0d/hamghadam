@@ -8,3 +8,5 @@ local.properties
 secrets/
 *.json
 *.db
+backend/static/avatars/*
+!backend/static/avatars/.gitkeep

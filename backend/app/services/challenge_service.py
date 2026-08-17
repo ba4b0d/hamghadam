@@ -41,7 +41,12 @@ from app.models.challenge import (
     CHALLENGE_STATUS_DRAFT,
     CHALLENGE_STATUS_ENDED,
 )
-from app.models.daily_score import METRIC_STEPS, SUPPORTED_METRICS
+from app.models.daily_score import (
+    METRIC_AVG_HR,
+    METRIC_SLEEP_SECONDS,
+    METRIC_STEPS,
+    SUPPORTED_METRICS,
+)
 from app.schemas.challenge import ChallengeCreateRequest
 from app.services.fcm import FcmSender, get_sender, notify_beat_you, notify_challenge_ended, notify_challenge_started
 
@@ -330,7 +335,11 @@ def _compute_participant_scores(
     window_start, window_end = _participant_window(challenge, tz)
     cutoff = as_of if as_of is not None else _default_cutoff(now, tz)
     series = _series(window_start, window_end, cutoff, scores_by_user.get(participant.user_id, {}), zero_fill)
-    total = sum(v for _, v in series)
+    if challenge.metric == METRIC_AVG_HR:
+        recorded = [v for _, v in series if v > 0]
+        total = sum(recorded) / len(recorded) if recorded else 0.0
+    else:
+        total = sum(v for _, v in series)
     return series, total
 
 

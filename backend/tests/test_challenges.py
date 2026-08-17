@@ -62,7 +62,10 @@ def test_create_challenge_validation(client):
     # ends_at before starts_at
     resp = client.post(
         "/api/v1/challenges",
-        json=_challenge_body(starts_at=(datetime.now(timezone.utc) + timedelta(days=2)).isoformat()),
+        json=_challenge_body(
+            starts_at=(datetime.now(timezone.utc) + timedelta(days=3)).isoformat(),
+            ends_at=(datetime.now(timezone.utc) + timedelta(days=2)).isoformat(),
+        ),
         headers=headers,
     )
     assert resp.status_code == 422
@@ -94,6 +97,31 @@ def test_create_challenge_validation(client):
         headers=headers,
     )
     assert resp.status_code == 422
+
+
+def test_create_sleep_and_hr_challenges(client):
+    token = _register(client, "creator_metrics@example.com")["access_token"]
+    headers = auth_headers(token)
+
+    # Sleep challenge
+    resp_sleep = client.post(
+        "/api/v1/challenges",
+        json=_challenge_body(title="8 Hours Sleep Club", metric="sleep_seconds"),
+        headers=headers,
+    )
+    assert resp_sleep.status_code == 201, resp_sleep.text
+    assert resp_sleep.json()["metric"] == "sleep_seconds"
+    assert resp_sleep.json()["title"] == "8 Hours Sleep Club"
+
+    # HR challenge
+    resp_hr = client.post(
+        "/api/v1/challenges",
+        json=_challenge_body(title="Resting HR Challenge", metric="avg_hr"),
+        headers=headers,
+    )
+    assert resp_hr.status_code == 201, resp_hr.text
+    assert resp_hr.json()["metric"] == "avg_hr"
+    assert resp_hr.json()["title"] == "Resting HR Challenge"
 
 
 def test_list_mine_and_visibility(client):

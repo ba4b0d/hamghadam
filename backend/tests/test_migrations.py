@@ -34,12 +34,20 @@ def test_alembic_upgrade_head_on_fresh_sqlite(tmp_path):
     assert {"users", "devices", "daily_scores"} <= tables, tables
     assert {"challenges", "challenge_participants"} <= tables, tables
     assert {"challenge_invites", "fcm_deliveries"} <= tables, tables
+    assert {"friendships"} <= tables, tables
 
     # BE-C3: challenges gained the optional participant cap column.
     challenge_cols = {c["name"] for c in inspect(engine).get_columns("challenges")}
     assert "max_participants" in challenge_cols, challenge_cols
     invite_cols = {c["name"] for c in inspect(engine).get_columns("challenge_invites")}
     assert {"code", "expires_at", "created_by", "challenge_id"} <= invite_cols, invite_cols
+
+    # V1.2 Social: users gained bio, avatar_url, location, google_id, auth_provider
+    user_cols = {c["name"] for c in inspect(engine).get_columns("users")}
+    assert {"bio", "avatar_url", "location", "google_id", "auth_provider"} <= user_cols, user_cols
+
+    friendship_cols = {c["name"] for c in inspect(engine).get_columns("friendships")}
+    assert {"id", "requester_id", "addressee_id", "status", "created_at", "updated_at"} <= friendship_cols, friendship_cols
 
     # downgrade back to base to prove reversibility
     result = subprocess.run(

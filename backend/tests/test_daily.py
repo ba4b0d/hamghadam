@@ -166,3 +166,29 @@ def test_range_query(client):
         "/api/v1/daily/range", params={"from": "2026-08-16", "to": "2026-08-14"}, headers=headers
     )
     assert resp.status_code == 422
+
+
+def test_daily_ingest_alias_endpoint(client):
+    token = _token(client)
+    headers = auth_headers(token)
+    payload = {
+        "date": "2026-08-18",
+        "tz_offset": 210,
+        "steps": 8500,
+        "sleep_seconds": 25200.0,
+        "avg_hr": 65.5,
+        "source_apps": ["com.samsung.health"],
+        "source": "health_connect",
+    }
+    resp = client.post("/api/v1/daily/ingest", json=payload, headers=headers)
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["steps"] == 8500
+    assert body["sleep_seconds"] == 25200.0
+    assert body["avg_hr"] == 65.5
+    assert body["date"] == "2026-08-18"
+
+    got = client.get("/api/v1/daily", params={"date": "2026-08-18"}, headers=headers)
+    assert got.status_code == 200
+    assert got.json()["sleep_seconds"] == 25200.0
+    assert got.json()["avg_hr"] == 65.5

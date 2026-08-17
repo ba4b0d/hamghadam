@@ -67,6 +67,16 @@ def ingest_daily(
     return _to_out(rows)
 
 
+@router.post("/ingest", response_model=DailyOut)
+def ingest_daily_alias(
+    payload: DailyIngestRequest,
+    response: Response,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> DailyOut:
+    return ingest_daily(payload, response, current_user, db)
+
+
 @router.get("", response_model=DailyOut)
 def get_daily(
     date: date | None = Query(default=None, description="Local date YYYY-MM-DD"),

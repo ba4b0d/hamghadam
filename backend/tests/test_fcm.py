@@ -261,7 +261,7 @@ def test_patch_status_with_registered_tokens_does_not_crash(client):
 
 # ------------------------------------------------------------- beat-you
 
-def _make_beat_battle(client, db_session):
+def _make_beat_battle(client, db_session, day: str | None = None):
     """Active challenge with Alice(rank 1) and Bob(rank 2), both with tokens.
 
     Both users are UTC+3:30 (like the app's primary market and the DB-1
@@ -283,8 +283,8 @@ def _make_beat_battle(client, db_session):
     bob_id = join.json()["participants"][1]["user_id"]
 
     # Seed scores: Alice 1000, Bob 500 (same local day, both within window).
-    upsert_daily(db_session, alice_id, _ingest(1000))
-    upsert_daily(db_session, bob_id, _ingest(500))
+    upsert_daily(db_session, alice_id, _ingest(1000, day=day))
+    upsert_daily(db_session, bob_id, _ingest(500, day=day))
 
     _add_device(db_session, alice_id, "tok-alice")
     _add_device(db_session, bob_id, "tok-bob")
@@ -395,14 +395,15 @@ def test_beat_you_fires_in_skew_window(client, db_session):
     never detected. Same fixture and assertions as
     test_beat_you_fires_when_ingest_overtakes, with `now` pinned to the skew.
     """
-    cid, alice_id, bob_id, _, _ = _make_beat_battle(client, db_session)
     now = SKEW_INSTANT
+    skew_day = (now + timedelta(minutes=210)).date().isoformat()
+    cid, alice_id, bob_id, _, _ = _make_beat_battle(client, db_session, day=skew_day)
 
     before = capture_standings(db_session, bob_id, now)
     assert before[cid][alice_id] == 1 and before[cid][bob_id] == 2
 
     sender = FcmSender(dry_run=True, log_deliveries=True)
-    upsert_daily(db_session, bob_id, _ingest(2000))  # Bob's local today -> 2026-08-17
+    upsert_daily(db_session, bob_id, _ingest(2000, day=skew_day))  # Bob's local today -> 2026-08-17
     notified = notify_overtaken(db_session, before, bob_id, now, sender=sender)
 
     assert notified == [alice_id]

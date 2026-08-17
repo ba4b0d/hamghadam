@@ -275,7 +275,7 @@ def test_leaderboard_default_as_of_matches_explicit_local_today(client):
     cutoff dropped the local-today row (default total 0 vs explicit 12345).
     """
     alice, bob, cid, d0 = _setup(client)
-    local_today = date.today().isoformat()  # frozen; 2026-08-17 in both windows
+    local_today = challenge_service._local_date(_now(), 210).isoformat()  # Alice's local today
     _post_daily(client, alice["access_token"], local_today, 12345, 210)
     _post_daily(client, bob["access_token"], (d0 - timedelta(days=1)).isoformat(), 8000, -240)
 
@@ -295,3 +295,94 @@ def test_leaderboard_default_as_of_matches_explicit_local_today(client):
     assert default_board["as_of"] == local_today
     assert alice_default["total"] == 12345
     assert alice_default["total"] == alice_explicit["total"]
+
+
+def test_leaderboard_sleep_seconds_metric(client):
+    alice = register_user(client, email="sleep-alice@example.com", tz_offset=0, display_name="Alice")
+    bob = register_user(client, email="sleep-bob@example.com", tz_offset=0, display_name="Bob")
+    d0 = _now().date()
+    body = {
+        "title": "Sleep Challenge",
+        "starts_at": f"{d0.isoformat()}T00:00:00Z",
+        "ends_at": f"{(d0 + timedelta(days=2)).isoformat()}T00:00:00Z",
+        "metric": "sleep_seconds",
+    }
+    created = client.post("/api/v1/challenges", json=body, headers=auth_headers(alice["access_token"]))
+    assert created.status_code == 201
+    cid = created.json()["id"]
+    client.post(f"/api/v1/challenges/{cid}/join", headers=auth_headers(bob["access_token"]))
+
+    # Alice ingests 28800 (8h) on d0, 25200 (7h) on d0+1 -> Total 54000s
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": d0.isoformat(), "tz_offset": 0, "steps": 5000, "sleep_seconds": 28800, "source": "health_connect"},
+        headers=auth_headers(alice["access_token"]),
+    )
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": (d0 + timedelta(days=1)).isoformat(), "tz_offset": 0, "steps": 6000, "sleep_seconds": 25200, "source": "health_connect"},
+        headers=auth_headers(alice["access_token"]),
+    )
+
+    # Bob ingests 21600 (6h) on d0 -> Total 21600s
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": d0.isoformat(), "tz_offset": 0, "steps": 8000, "sleep_seconds": 21600, "source": "health_connect"},
+        headers=auth_headers(bob["access_token"]),
+    )
+
+    board = client.get(
+        f"/api/v1/challenges/{cid}/leaderboard",
+        params={"as_of": (d0 + timedelta(days=1)).isoformat()},
+        headers=auth_headers(alice["access_token"]),
+    ).json()
+    assert board["metric"] == "sleep_seconds"
+    entries = {e["user_id"]: e for e in board["entries"]}
+    assert entries[alice["user"]["id"]]["total"] == 54000.0
+    assert entries[bob["user"]["id"]]["total"] == 21600.0
+    assert board["entries"][0]["user_id"] == alice["user"]["id"]
+
+
+def test_leaderboard_avg_hr_metric(client):
+    alice = register_user(client, email="hr-alice@example.com", tz_offset=0, display_name="Alice")
+    bob = register_user(client, email="hr-bob@example.com", tz_offset=0, display_name="Bob")
+    d0 = _now().date()
+    body = {
+        "title": "Heart Rate Challenge",
+        "starts_at": f"{d0.isoformat()}T00:00:00Z",
+        "ends_at": f"{(d0 + timedelta(days=2)).isoformat()}T00:00:00Z",
+        "metric": "avg_hr",
+    }
+    created = client.post("/api/v1/challenges", json=body, headers=auth_headers(alice["access_token"]))
+    assert created.status_code == 201
+    cid = created.json()["id"]
+    client.post(f"/api/v1/challenges/{cid}/join", headers=auth_headers(bob["access_token"]))
+
+    # Alice: Day 1 avg_hr = 70.0, Day 2 avg_hr = 74.0 -> Average total = 72.0
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": d0.isoformat(), "tz_offset": 0, "steps": 5000, "avg_hr": 70.0, "source": "health_connect"},
+        headers=auth_headers(alice["access_token"]),
+    )
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": (d0 + timedelta(days=1)).isoformat(), "tz_offset": 0, "steps": 6000, "avg_hr": 74.0, "source": "health_connect"},
+        headers=auth_headers(alice["access_token"]),
+    )
+
+    # Bob: Day 1 avg_hr = 62.0 -> Average total = 62.0
+    client.post(
+        "/api/v1/daily/ingest",
+        json={"date": d0.isoformat(), "tz_offset": 0, "steps": 8000, "avg_hr": 62.0, "source": "health_connect"},
+        headers=auth_headers(bob["access_token"]),
+    )
+
+    board = client.get(
+        f"/api/v1/challenges/{cid}/leaderboard",
+        params={"as_of": (d0 + timedelta(days=1)).isoformat()},
+        headers=auth_headers(alice["access_token"]),
+    ).json()
+    assert board["metric"] == "avg_hr"
+    entries = {e["user_id"]: e for e in board["entries"]}
+    assert entries[alice["user"]["id"]]["total"] == 72.0
+    assert entries[bob["user"]["id"]]["total"] == 62.0

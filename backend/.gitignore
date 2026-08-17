@@ -14,3 +14,5 @@ build/
 fitness.db
 .idea/
 .vscode/
+static/avatars/*
+!static/avatars/.gitkeep
