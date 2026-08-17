@@ -23,11 +23,12 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "DEFAULT_BASE_URL", "\"https://BACKEND_URL/api/v1\"")
+            buildConfigField("String", "DEFAULT_BASE_URL", "\"https://api.hamghadam.ba4b0d.ir/api/v1\"")
         }
         debug {
             versionNameSuffix = "-debug"

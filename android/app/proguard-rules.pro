@@ -3,6 +3,17 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 
+# androidx.work & WorkManager
+-keep class androidx.work.impl.WorkDatabase_Impl {
+    <init>(...);
+}
+-keep class * extends androidx.work.Worker {
+    <init>(...);
+}
+-keep class * extends androidx.work.ListenableWorker {
+    <init>(...);
+}
+
 # kotlinx.serialization
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 -if @kotlinx.serialization.Serializable class **
@@ -21,3 +32,4 @@
 -keepclassmembers class <1> {
     static <1>$Companion Companion;
 }
+

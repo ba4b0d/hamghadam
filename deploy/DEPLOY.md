@@ -1,6 +1,8 @@
-# HamGhadam API Deployment Guide (RP5 + Cloudflare Tunnel)
+# HamGhadam API Deployment Guide (RP5 + Nginx Proxy Manager)
 
-This guide covers deploying the HamGhadam FastAPI backend to Raspberry Pi 5 (`192.168.100.51`) and exposing it via Cloudflare Tunnel.
+Deploys the HamGhadam FastAPI backend to Raspberry Pi 5 (`192.168.100.51`) on host port **8008**, then routes a public domain to it via Nginx Proxy Manager (NPM).
+
+> Port note: RP5 port 3000 is occupied (ntopng) — the API publishes on **8008** (container 8000). NPM proxies the domain to `192.168.100.51:8008`.
 
 ---
 
@@ -34,8 +36,8 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ### 1. Healthcheck
 ```bash
-curl http://localhost:8000/healthz
-# Expected output: {"status":"ok","app_env":"production"}
+curl http://localhost:8008/healthz
+# Expected output: {"status":"ok",...}
 ```
 
 ### 2. Verify FCM Real Push from Pi
@@ -46,45 +48,22 @@ docker compose -f docker-compose.prod.yml exec api python scripts/send_test_push
 
 ---
 
-## Cloudflare Tunnel Setup (Public HTTPS Quickstart)
+## Nginx Proxy Manager (NPM) — Public HTTPS Routing
 
-To expose `http://localhost:8000` to the internet via HTTPS without opening router ports:
+The operator is adding a new domain in NPM. Configure the proxy host:
 
-### 1. Install `cloudflared` on Pi 5 (ARM64)
-```bash
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
-sudo dpkg -i cloudflared.deb
-```
+| NPM field | Value |
+|-----------|-------|
+| Domain | **api.hamghadam.ba4b0d.ir** |
+| Scheme | http |
+| Forward Host / IP | 192.168.100.51 |
+| Forward Port | **8008** |
+| SSL | ON — request a new Let's Encrypt certificate, force HTTPS |
 
-### 2. Authenticate and Create Tunnel
-```bash
-# Login to Cloudflare account (requires browser / auth link)
-cloudflared tunnel login
+- NPM must be on a host that can reach the RP5 (same LAN/subnet). It already routes other Pi services today.
+- No router port-forward is needed for NPM → Pi if NPM is on the same LAN; the public DNS record (A/AAAA to the NPM host IP, or CNAME to a hostname) is what exposes NPM to the internet.
+- Verify: `curl https://api.hamghadam.ba4b0d.ir/healthz` returns `{"status":"ok",...}`.
 
-# Create tunnel for HamGhadam
-cloudflared tunnel create hamghadam-api
-```
+## Release Android BuildConfig
 
-### 3. Create Configuration File (`~/.cloudflared/config.yml`)
-```yaml
-tunnel: <TUNNEL_UUID>
-credentials-file: /home/pi/.cloudflared/<TUNNEL_UUID>.json
-
-ingress:
-  - hostname: api.yourdomain.com # Set to chosen public subdomain
-    service: http://localhost:8000
-  - service: http_status:404
-```
-
-### 4. Route DNS & Enable System Service
-```bash
-cloudflared tunnel route dns hamghadam-api api.yourdomain.com
-sudo cloudflared service install
-sudo systemctl start cloudflared
-```
-
-Once running, test public endpoint:
-```bash
-curl https://api.yourdomain.com/healthz
-```
-Bake this public HTTPS URL into the Android Release BuildConfig.
+Bake `https://api.hamghadam.ba4b0d.ir/api/v1` into the Android release BuildConfig (replaces the `BACKEND_URL` placeholder in UI-POLISH t_0b521102).

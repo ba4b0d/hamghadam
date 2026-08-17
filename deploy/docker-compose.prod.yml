@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "8000:8000"
+      - "8008:8000"   # host 8008 -> container 8000 (3000 is taken by ntopng on RP5; NPM routes the domain to 8008)
     environment:
       - APP_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER:-hamghadam}:${POSTGRES_PASSWORD:-hamghadam_secure_pass_2026}@db:5432/${POSTGRES_DB:-hamghadam_db}
