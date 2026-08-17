@@ -40,9 +40,18 @@ class AuthStore(context: Context) {
         get() = prefs.getBoolean(KEY_FCM_REGISTERED, false)
         set(value) = prefs.edit().putBoolean(KEY_FCM_REGISTERED, value).apply()
 
-    /** Backend base URL including /api/v1. Emulator reaches the host via 10.0.2.2. */
+    /** Backend base URL including /api/v1. Defaulted via BuildConfig. */
     var baseUrl: String
-        get() = prefs.getString(KEY_BASE_URL, DEFAULT_BASE_URL) ?: DEFAULT_BASE_URL
+        get() {
+            if (com.fitnessapp.android.BuildConfig.DEBUG) {
+                if (prefs.contains(KEY_BASE_URL)) {
+                    prefs.edit().remove(KEY_BASE_URL).apply()
+                }
+                return com.fitnessapp.android.BuildConfig.DEFAULT_BASE_URL
+            }
+            return prefs.getString(KEY_BASE_URL, com.fitnessapp.android.BuildConfig.DEFAULT_BASE_URL)
+                ?: com.fitnessapp.android.BuildConfig.DEFAULT_BASE_URL
+        }
         set(value) = prefs.edit().putString(KEY_BASE_URL, value.trimEnd('/')).apply()
 
     fun recordSyncSuccess(date: String, atMillis: Long = System.currentTimeMillis()) {
@@ -72,7 +81,7 @@ class AuthStore(context: Context) {
     }
 
     companion object {
-        const val DEFAULT_BASE_URL = "http://10.0.2.2:8000/api/v1"
+        val DEFAULT_BASE_URL get() = com.fitnessapp.android.BuildConfig.DEFAULT_BASE_URL
         private const val KEY_JWT = "jwt"
         private const val KEY_EMAIL = "email"
         private const val KEY_USER_ID = "user_id"

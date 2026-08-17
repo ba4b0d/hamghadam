@@ -178,7 +178,7 @@ fun ChallengesContent(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "همقدم Challenges",
+                text = "Challenges",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
@@ -338,7 +338,7 @@ private fun SignInCard(onSignInHint: () -> Unit) {
         ) {
             Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = SoftBlue, modifier = Modifier.size(40.dp))
             Spacer(Modifier.height(12.dp))
-            Text("Sign in to see your همقدم challenges", fontWeight = FontWeight.SemiBold)
+            Text("Sign in to see your challenges", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             Text(
                 "Create step challenges, invite friends with a code, and climb the leaderboard.",
@@ -365,7 +365,7 @@ private fun EmptyCard(onCreate: () -> Unit) {
         ) {
             Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
             Spacer(Modifier.height(12.dp))
-            Text("No challenges yet on HamGhadam", fontWeight = FontWeight.SemiBold)
+            Text("No challenges yet", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             Text(
                 "Create your first step challenge, or join one with an invite link.",

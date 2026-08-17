@@ -80,7 +80,7 @@ private fun RationaleContent(onContinue: () -> Unit) {
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = "HamGhadam reads your daily steps from Health Connect so you can see them on " +
+            text = "Reads your daily steps from Health Connect so you can see them on " +
                 "the dashboard and — with your consent — sync them to your private account for " +
                 "step challenges with friends.",
             style = MaterialTheme.typography.bodyMedium,

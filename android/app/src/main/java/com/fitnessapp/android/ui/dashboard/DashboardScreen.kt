@@ -239,7 +239,7 @@ private fun EmptyStateCard(
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_hamghadam_mark),
-                contentDescription = "HamGhadam",
+                contentDescription = null,
                 modifier = Modifier.size(80.dp),
             )
             Spacer(Modifier.height(16.dp))

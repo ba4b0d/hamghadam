@@ -50,7 +50,6 @@ import kotlinx.coroutines.launch
 data class AccountUiState(
     val email: String = "",
     val password: String = "",
-    val baseUrl: String = "",
     val signedIn: Boolean = false,
     val busy: Boolean = false,
     val message: String? = null,
@@ -62,7 +61,6 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(
         AccountUiState(
             email = container.authStore.email.orEmpty(),
-            baseUrl = container.authStore.baseUrl,
             signedIn = container.authStore.jwt != null,
         )
     )
@@ -70,12 +68,6 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onEmail(v: String) = _state.update { it.copy(email = v) }
     fun onPassword(v: String) = _state.update { it.copy(password = v) }
-    fun onBaseUrl(v: String) = _state.update { it.copy(baseUrl = v) }
-
-    fun saveBaseUrl() {
-        container.authStore.baseUrl = _state.value.baseUrl
-        _state.update { it.copy(message = "Base URL saved") }
-    }
 
     fun register() {
         val s = _state.value
@@ -167,28 +159,6 @@ fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
         )
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text("Backend", fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = state.baseUrl,
-                    onValueChange = viewModel::onBaseUrl,
-                    label = { Text("API base URL (incl. /api/v1)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = viewModel::saveBaseUrl, modifier = Modifier.fillMaxWidth()) {
-                    Text("Save base URL")
-                }
-            }
-        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),

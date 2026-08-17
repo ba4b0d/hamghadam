@@ -69,8 +69,8 @@ class ChallengesUiTest {
                 )
             }
         }
-        compose.onNodeWithText("همقدم Challenges").assertIsDisplayed()
-        compose.onNodeWithText("Sign in to see your همقدم challenges").assertIsDisplayed()
+        compose.onNodeWithText("Challenges").assertIsDisplayed()
+        compose.onNodeWithText("Sign in to see your challenges").assertIsDisplayed()
     }
 
     @Test
@@ -106,7 +106,7 @@ class ChallengesUiTest {
                 )
             }
         }
-        compose.onNodeWithText("No challenges yet on HamGhadam").assertIsDisplayed()
+        compose.onNodeWithText("No challenges yet").assertIsDisplayed()
         compose.onNodeWithText("Create a challenge").assertIsDisplayed()
     }
 

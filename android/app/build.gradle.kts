@@ -27,9 +27,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "DEFAULT_BASE_URL", "\"https://BACKEND_URL/api/v1\"")
         }
         debug {
             versionNameSuffix = "-debug"
+            buildConfigField("String", "DEFAULT_BASE_URL", "\"http://10.0.2.2:8000/api/v1\"")
         }
     }
 
