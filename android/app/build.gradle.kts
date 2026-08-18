@@ -29,12 +29,12 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "DEFAULT_BASE_URL", "\"https://api.hamghadam.ba4b0d.ir/api/v1\"")
-            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-hamghadam-web.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com\"")
         }
         debug {
             versionNameSuffix = "-debug"
             buildConfigField("String", "DEFAULT_BASE_URL", "\"http://10.0.2.2:8000/api/v1\"")
-            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-hamghadam-web.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com\"")
         }
     }
 

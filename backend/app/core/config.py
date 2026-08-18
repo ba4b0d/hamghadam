@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     fcm_dry_run: bool = True
 
     # Google Auth & User Profiles (V1.2 Social)
-    google_web_client_id: str = ""
+    google_web_client_id: str = "590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com"
     avatar_dir: str = "static/avatars"
     avatar_base_url: str = "https://api.hamghadam.ba4b0d.ir/static/avatars"
     max_avatar_size_bytes: int = 5 * 1024 * 1024  # 5MB
