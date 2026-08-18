@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -36,6 +38,9 @@ import com.fitnessapp.android.data.model.toNavRoute
 import com.fitnessapp.android.ui.challenges.ChallengeDetailScreen
 import com.fitnessapp.android.ui.challenges.ChallengesScreen
 import com.fitnessapp.android.ui.dashboard.DashboardScreen
+import com.fitnessapp.android.ui.friends.FriendsScreen
+import com.fitnessapp.android.ui.hr.HrTestScreen
+import com.fitnessapp.android.ui.profile.ProfileScreen
 import com.fitnessapp.android.ui.settings.AccountScreen
 
 enum class TopLevelDestination(
@@ -45,7 +50,8 @@ enum class TopLevelDestination(
 ) {
     DASHBOARD("dashboard", R.string.nav_dashboard, Icons.AutoMirrored.Filled.DirectionsRun),
     CHALLENGES("challenges", R.string.nav_challenges, Icons.Filled.EmojiEvents),
-    ACCOUNT("account", R.string.nav_settings, Icons.Filled.Settings),
+    FRIENDS("friends", R.string.nav_friends, Icons.Filled.People),
+    ACCOUNT("account", R.string.nav_settings, Icons.Filled.Person),
 }
 
 object ChallengeRoutes {
@@ -54,7 +60,7 @@ object ChallengeRoutes {
 
 /**
  * App shell: bottom navigation + routing between Dashboard / Challenges /
- * Account and the challenge detail screen (with deep-link handling).
+ * Account, HR test screen, and the challenge detail screen (with deep-link handling).
  */
 @Composable
 fun MainScreen() {
@@ -118,15 +124,26 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(TopLevelDestination.DASHBOARD.route) {
-                DashboardScreen()
+                DashboardScreen(onOpenHrTest = {
+                    navController.navigate("hr_test")
+                })
+            }
+            composable("hr_test") {
+                HrTestScreen(onBack = { navController.popBackStack() })
             }
             composable(TopLevelDestination.CHALLENGES.route) {
                 ChallengesScreen(onOpenChallenge = { id ->
                     navController.navigate("challenge/$id")
                 })
             }
+            composable(TopLevelDestination.FRIENDS.route) {
+                FriendsScreen()
+            }
             composable(TopLevelDestination.ACCOUNT.route) {
                 AccountScreen()
+            }
+            composable("profile") {
+                ProfileScreen()
             }
             composable(
                 route = ChallengeRoutes.detail,

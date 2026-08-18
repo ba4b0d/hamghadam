@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +61,8 @@ import com.fitnessapp.android.data.model.Challenge
 import com.fitnessapp.android.data.model.ChallengeFormatters
 import com.fitnessapp.android.data.model.InviteInfo
 import com.fitnessapp.android.data.model.LeaderboardEntry
+import com.fitnessapp.android.data.model.UserPublicProfile
+import com.fitnessapp.android.ui.profile.PublicProfileDialog
 import com.fitnessapp.android.ui.theme.AccentOrange
 import com.fitnessapp.android.ui.theme.SoftBlue
 import com.fitnessapp.android.ui.theme.SoftBlueLight
@@ -143,6 +149,8 @@ fun ChallengeDetailContent(
     onClearNotice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var selectedUserProfile by remember { mutableStateOf<UserPublicProfile?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -200,10 +208,24 @@ fun ChallengeDetailContent(
                     state = state,
                     challenge = challenge,
                     onRefresh = onRefreshLeaderboard,
+                    onUserClick = { entry ->
+                        selectedUserProfile = UserPublicProfile(
+                            id = entry.userId,
+                            displayName = entry.displayName,
+                        )
+                    },
                 )
                 ParticipantsCard(challenge)
             }
         }
+    }
+
+    // Public Profile Dialog for Leaderboard users
+    selectedUserProfile?.let { user ->
+        PublicProfileDialog(
+            user = user,
+            onDismiss = { selectedUserProfile = null },
+        )
     }
 
     // Join-with-code dialog (invite-only challenges)
@@ -432,6 +454,7 @@ private fun LeaderboardCard(
     state: ChallengeDetailUiState,
     challenge: Challenge,
     onRefresh: () -> Unit,
+    onUserClick: (LeaderboardEntry) -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -477,7 +500,11 @@ private fun LeaderboardCard(
                     )
                     Spacer(Modifier.height(8.dp))
                     board.entries.forEach { entry ->
-                        LeaderboardRow(entry, challenge.metric)
+                        LeaderboardRow(
+                            entry = entry,
+                            metric = challenge.metric,
+                            onClick = { onUserClick(entry) },
+                        )
                     }
                 }
             }
@@ -486,7 +513,12 @@ private fun LeaderboardCard(
 }
 
 @Composable
-fun LeaderboardRow(entry: LeaderboardEntry, metric: String, modifier: Modifier = Modifier) {
+fun LeaderboardRow(
+    entry: LeaderboardEntry,
+    metric: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
     val medalColor = when (entry.rank) {
         1 -> AccentOrange
         2 -> Color(0xFF9AA0A6)
@@ -496,6 +528,7 @@ fun LeaderboardRow(entry: LeaderboardEntry, metric: String, modifier: Modifier =
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .padding(vertical = 6.dp)
             .then(
                 if (entry.isMe) Modifier

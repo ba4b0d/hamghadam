@@ -1,46 +1,17 @@
 package com.fitnessapp.android.ui.settings
 
 import android.app.Application
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fitnessapp.android.FitnessApp
 import com.fitnessapp.android.data.network.ApiResult
 import com.fitnessapp.android.data.sync.SyncScheduler
+import com.fitnessapp.android.ui.auth.LoginScreen
+import com.fitnessapp.android.ui.profile.ProfileScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,6 +58,42 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
         launchAuth(register = false)
     }
 
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(busy = true, message = null) }
+            val result = container.apiClient.loginWithGoogle(idToken)
+            when (result) {
+                is ApiResult.Success -> {
+                    container.authStore.jwt = result.value.token
+                    result.value.email?.let { container.authStore.email = it }
+                    container.authStore.userId = result.value.userId
+                    result.value.displayName?.let { container.authStore.displayName = it }
+                    result.value.avatarUrl?.let { container.authStore.avatarUrl = it }
+                    result.value.bio?.let { container.authStore.bio = it }
+                    container.authStore.authProvider = "google"
+                    _state.update {
+                        it.copy(
+                            email = container.authStore.email.orEmpty(),
+                            busy = false,
+                            signedIn = true,
+                            message = "Signed in with Google ✓",
+                        )
+                    }
+                    SyncScheduler.syncNow(getApplication())
+                    container.fcmTokenManager.registerIfSignedIn(force = true)
+                }
+                is ApiResult.Unauthorized -> _state.update { it.copy(busy = false, message = "Google Sign-In unauthorized: ${result.detail}") }
+                is ApiResult.Validation -> _state.update { it.copy(busy = false, message = "Google validation error: ${result.detail}") }
+                is ApiResult.Failure -> _state.update { it.copy(busy = false, message = "Google Sign-In failed: ${result.detail}") }
+                else -> _state.update { it.copy(busy = false, message = "Google Sign-In error") }
+            }
+        }
+    }
+
+    fun onGoogleAuthError(err: String) {
+        _state.update { it.copy(busy = false, message = "Google Sign-In: $err") }
+    }
+
     private fun launchAuth(register: Boolean) {
         viewModelScope.launch {
             val s = _state.value
@@ -103,6 +110,9 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
                     container.authStore.email = s.email.trim()
                     container.authStore.userId = result.value.userId
                     result.value.displayName?.let { container.authStore.displayName = it }
+                    result.value.avatarUrl?.let { container.authStore.avatarUrl = it }
+                    result.value.bio?.let { container.authStore.bio = it }
+                    container.authStore.authProvider = "email"
                     _state.update {
                         it.copy(busy = false, signedIn = true, message = if (register) "Registered ✓" else "Signed in ✓")
                     }
@@ -117,6 +127,7 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
                         container.authStore.email = s.email.trim()
                         container.authStore.userId = login.value.userId
                         login.value.displayName?.let { container.authStore.displayName = it }
+                        container.authStore.authProvider = "email"
                         _state.update { it.copy(busy = false, signedIn = true, message = "Registered before — signed in ✓") }
                         SyncScheduler.syncNow(getApplication())
                         container.fcmTokenManager.registerIfSignedIn(force = true)
@@ -147,85 +158,23 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
 fun AccountScreen(viewModel: AccountViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = "Account",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+    if (state.signedIn) {
+        ProfileScreen(
+            onSignOut = viewModel::signOut,
+            onSyncNow = viewModel::syncNow,
         )
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text(
-                    if (state.signedIn) "Session" else "Sign in / Register",
-                    fontWeight = FontWeight.SemiBold,
-                )
-                if (state.signedIn) {
-                    Spacer(Modifier.height(8.dp))
-                    Text("Signed in as ${state.email}")
-                    Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = viewModel::syncNow, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Filled.Sync, contentDescription = null)
-                            Spacer(Modifier.height(0.dp))
-                            Text("Sync now")
-                        }
-                        OutlinedButton(onClick = viewModel::signOut, modifier = Modifier.weight(1f)) {
-                            Text("Sign out")
-                        }
-                    }
-                } else {
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = state.email,
-                        onValueChange = viewModel::onEmail,
-                        label = { Text("Email") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = state.password,
-                        onValueChange = viewModel::onPassword,
-                        label = { Text("Password (≥ 8 chars)") },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = viewModel::login, enabled = !state.busy, modifier = Modifier.weight(1f)) {
-                            Text("Sign in")
-                        }
-                        OutlinedButton(onClick = viewModel::register, enabled = !state.busy, modifier = Modifier.weight(1f)) {
-                            Text("Register")
-                        }
-                    }
-                }
-                if (state.busy) {
-                    Spacer(Modifier.height(12.dp))
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
-            }
-        }
-
-        state.message?.let { msg ->
-            Text(
-                text = msg,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (msg.startsWith("Network") || msg.contains("failed") || msg.contains("error", ignoreCase = true))
-                    MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            )
-        }
+    } else {
+        LoginScreen(
+            email = state.email,
+            password = state.password,
+            onEmailChange = viewModel::onEmail,
+            onPasswordChange = viewModel::onPassword,
+            onSignIn = viewModel::login,
+            onRegister = viewModel::register,
+            onGoogleIdToken = viewModel::loginWithGoogle,
+            onGoogleError = viewModel::onGoogleAuthError,
+            busy = state.busy,
+            message = state.message,
+        )
     }
 }

@@ -33,7 +33,14 @@ enum class HcStatus {
     UNKNOWN,
 }
 
-/** Wraps the read-only Health Connect access used by the app (v1: no writes). */
+data class HeartRateSummary(
+    val avgBpm: Long,
+    val minBpm: Long,
+    val maxBpm: Long,
+    val count: Long,
+)
+
+/** Wraps the read-only Health Connect access used by the app. */
 class HealthConnectRepository(private val context: Context) {
 
     companion object {
@@ -41,18 +48,12 @@ class HealthConnectRepository(private val context: Context) {
         const val PERM_READ_BACKGROUND = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
 
         /**
-         * v1 read types — STEPS ONLY (Play-ready scope).
-         *
-         * We must only request the READ_* types a live feature actually powers.
-         * v1 ships step challenges only, so READ_STEPS is the sole permission we
-         * request and surface as granted. Sleep & heart rate stay out of the
-         * consent flow until a feature (sleep/HR challenge) uses them.
-         *
-         * Each requested READ_* maps to a function it powers (checklist 1.4):
-         *   READ_STEPS -> step challenges + dashboard steps.
+         * Health Connect read permission record types (v1.1: Steps, Sleep, Heart Rate).
          */
         val REQUIRED_READ_TYPES: List<KClass<out Record>> = listOf(
             StepsRecord::class,
+            SleepSessionRecord::class,
+            HeartRateRecord::class,
         )
     }
 
@@ -159,6 +160,64 @@ class HealthConnectRepository(private val context: Context) {
         )
     }
 
+    /**
+     * Read heart rate aggregate metrics (AVG, MIN, MAX) over a given time window.
+     */
+    suspend fun readHeartRateSummary(
+        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS),
+        endTime: Instant = Instant.now(),
+    ): HeartRateSummary? {
+        val hc = clientOrNull() ?: return null
+        val granted = hc.permissionController.getGrantedPermissions()
+        if (HealthPermission.getReadPermission(HeartRateRecord::class) !in granted) return null
+
+        return try {
+            val records = hc.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeartRateRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                )
+            ).records
+
+            val allSamples = records.flatMap { it.samples }.map { it.beatsPerMinute }.filter { it > 0 }
+            if (allSamples.isEmpty()) return HeartRateSummary(0, 0, 0, 0)
+
+            val avg = allSamples.average().toLong()
+            val min = allSamples.minOrNull() ?: 0L
+            val max = allSamples.maxOrNull() ?: 0L
+            val count = allSamples.size.toLong()
+
+            HeartRateSummary(avgBpm = avg, minBpm = min, maxBpm = max, count = count)
+        } catch (e: Exception) {
+            Log.w(TAG, "readHeartRateSummary failed", e)
+            null
+        }
+    }
+
+    /**
+     * Read raw HeartRateRecord entries for the HR test screen.
+     */
+    suspend fun readHeartRateRecords(
+        startTime: Instant = Instant.now().minus(24, ChronoUnit.HOURS),
+        endTime: Instant = Instant.now(),
+    ): List<HeartRateRecord> {
+        val hc = clientOrNull() ?: return emptyList()
+        val granted = hc.permissionController.getGrantedPermissions()
+        if (HealthPermission.getReadPermission(HeartRateRecord::class) !in granted) return emptyList()
+
+        return try {
+            hc.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeartRateRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                )
+            ).records
+        } catch (e: Exception) {
+            Log.w(TAG, "readHeartRateRecords failed", e)
+            emptyList()
+        }
+    }
+
     /** True when this Health Connect build exposes the Matchmaking feature at all. */
     @OptIn(ExperimentalMatchmakingApi::class)
     fun matchmakingFeatureAvailable(): Boolean {
@@ -205,7 +264,7 @@ class HealthConnectRepository(private val context: Context) {
     @OptIn(ExperimentalMatchmakingApi::class)
     private fun matchmakingRequest(): MatchmakingRequest =
         MatchmakingRequest(
-            recordTypes = setOf(StepsRecord::class),
+            recordTypes = setOf(StepsRecord::class, SleepSessionRecord::class, HeartRateRecord::class),
             includedDataSources = emptySet(),
             excludedDataSources = emptySet(),
         )

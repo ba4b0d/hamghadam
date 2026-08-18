@@ -29,10 +29,12 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "DEFAULT_BASE_URL", "\"https://api.hamghadam.ba4b0d.ir/api/v1\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-hamghadam-web.apps.googleusercontent.com\"")
         }
         debug {
             versionNameSuffix = "-debug"
             buildConfigField("String", "DEFAULT_BASE_URL", "\"http://10.0.2.2:8000/api/v1\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"590964300109-hamghadam-web.apps.googleusercontent.com\"")
         }
     }
 
@@ -93,6 +95,15 @@ dependencies {
 
     // Networking
     implementation(libs.okhttp)
+
+    // Google Sign-In & Credential Manager
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.play.services.auth)
+
+    // Image loading
+    implementation(libs.coil.compose)
 
     // Tests
     testImplementation(libs.junit)

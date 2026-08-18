@@ -36,6 +36,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -133,6 +134,7 @@ fun ChallengesScreen(
         CreateChallengeDialog(
             state = state,
             onTitleChange = viewModel::onCreateTitle,
+            onMetricChange = viewModel::onCreateMetric,
             onStartChange = viewModel::onCreateStart,
             onEndChange = viewModel::onCreateEnd,
             onInviteOnlyChange = viewModel::onCreateInviteOnly,
@@ -269,7 +271,7 @@ fun ChallengeCard(
                 }
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = ChallengeFormatters.formatWindowShort(challenge.startsAt, challenge.endsAt),
+                    text = "${challenge.metricLabel} · ${ChallengeFormatters.formatWindowShort(challenge.startsAt, challenge.endsAt)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -341,7 +343,7 @@ private fun SignInCard(onSignInHint: () -> Unit) {
             Text("Sign in to see your challenges", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Create step challenges, invite friends with a code, and climb the leaderboard.",
+                "Create fitness challenges, invite friends with a code, and climb the leaderboard.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -368,7 +370,7 @@ private fun EmptyCard(onCreate: () -> Unit) {
             Text("No challenges yet", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Create your first step challenge, or join one with an invite link.",
+                "Create your first step, sleep, or heart rate challenge, or join one with an invite link.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -437,6 +439,7 @@ private fun CenteredLoading() {
 fun CreateChallengeDialog(
     state: ChallengesUiState,
     onTitleChange: (String) -> Unit,
+    onMetricChange: (String) -> Unit,
     onStartChange: (LocalDateTime) -> Unit,
     onEndChange: (LocalDateTime) -> Unit,
     onInviteOnlyChange: (Boolean) -> Unit,
@@ -457,6 +460,25 @@ fun CreateChallengeDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+
+                Text("Challenge Metric", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    listOf(
+                        "steps" to "Steps",
+                        "sleep_seconds" to "Sleep",
+                        "avg_hr" to "Heart Rate",
+                    ).forEach { (key, label) ->
+                        FilterChip(
+                            selected = state.createMetric == key,
+                            onClick = { onMetricChange(key) },
+                            label = { Text(label) },
+                        )
+                    }
+                }
+
                 DateTimeField(
                     label = "Start",
                     value = state.createStart,

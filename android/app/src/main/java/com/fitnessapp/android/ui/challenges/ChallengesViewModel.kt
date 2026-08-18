@@ -26,6 +26,7 @@ data class ChallengesUiState(
     // create form
     val createOpen: Boolean = false,
     val createTitle: String = "",
+    val createMetric: String = "steps", // steps | sleep_seconds | avg_hr
     val createStart: LocalDateTime? = null,
     val createEnd: LocalDateTime? = null,
     val createInviteOnly: Boolean = false,
@@ -99,6 +100,7 @@ class ChallengesViewModel(app: Application) : AndroidViewModel(app) {
             it.copy(
                 createOpen = true,
                 createTitle = "",
+                createMetric = "steps",
                 createStart = now.plusHours(1).withMinute(0).withSecond(0).withNano(0),
                 createEnd = now.plusDays(7).withMinute(0).withSecond(0).withNano(0),
                 createInviteOnly = false,
@@ -111,6 +113,7 @@ class ChallengesViewModel(app: Application) : AndroidViewModel(app) {
 
     fun closeCreate() = _state.update { it.copy(createOpen = false) }
     fun onCreateTitle(v: String) = _state.update { it.copy(createTitle = v.take(120), createError = null) }
+    fun onCreateMetric(v: String) = _state.update { it.copy(createMetric = v) }
     fun onCreateStart(v: LocalDateTime) = _state.update { it.copy(createStart = v, createError = null) }
     fun onCreateEnd(v: LocalDateTime) = _state.update { it.copy(createEnd = v, createError = null) }
     fun onCreateInviteOnly(v: Boolean) = _state.update { it.copy(createInviteOnly = v) }
@@ -138,7 +141,7 @@ class ChallengesViewModel(app: Application) : AndroidViewModel(app) {
                 title = title,
                 startsAtIso = toUtcIso(start),
                 endsAtIso = toUtcIso(end),
-                metric = "steps",
+                metric = s.createMetric,
                 inviteOnly = s.createInviteOnly,
                 maxParticipants = maxP,
             )) {

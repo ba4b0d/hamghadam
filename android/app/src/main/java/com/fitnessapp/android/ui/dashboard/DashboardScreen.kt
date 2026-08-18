@@ -1,6 +1,7 @@
 package com.fitnessapp.android.ui.dashboard
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
@@ -63,7 +65,10 @@ import java.time.LocalDate
  * summary with source attribution, last-7-days steps chart, sync.
  */
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
+fun DashboardScreen(
+    viewModel: DashboardViewModel = viewModel(),
+    onOpenHrTest: () -> Unit = {},
+) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
@@ -80,6 +85,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
         onConnect = { viewModel.openMatchmaking(context) },
         onRefresh = { viewModel.refreshAll() },
         onSyncNow = { viewModel.syncNow() },
+        onOpenHrTest = onOpenHrTest,
         syncLine = viewModel.formatSyncLine(),
     )
 }
@@ -96,6 +102,7 @@ fun DashboardContent(
     onConnect: () -> Unit,
     onRefresh: () -> Unit,
     onSyncNow: () -> Unit,
+    onOpenHrTest: () -> Unit = {},
     syncLine: String?,
     modifier: Modifier = Modifier,
 ) {
@@ -118,7 +125,7 @@ fun DashboardContent(
                 val hasAnyData = !state.summary?.sourceApps.isNullOrEmpty() &&
                     (state.summary?.steps ?: 0L) > 0
                 if (hasAnyData) {
-                    DailySummaryCard(state, today, onRefresh, onSyncNow)
+                    DailySummaryCard(state, today, onRefresh, onSyncNow, onOpenHrTest)
                     WeekStripCard(state.week, today, state.weekLoading)
                     ConnectWatchCard(
                         possible = state.matchmakingPossible,
@@ -155,19 +162,13 @@ private fun PermissionCard(
         Column(Modifier.padding(16.dp)) {
             Text("Data access", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            // v1 requests only READ_STEPS, mapped to the function it powers (checklist 1.4).
             listOf(
                 "Steps — powers your step challenges" to "android.permission.health.READ_STEPS",
+                "Sleep — powers sleep challenges" to "android.permission.health.READ_SLEEP",
+                "Heart rate — powers HR test screen & challenges" to "android.permission.health.READ_HEART_RATE",
             ).forEach { (label, perm) ->
                 PermissionRow(label, perm in state.grantedPermissions)
             }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = "Sleep & heart rate aren't requested in v1 — they'll be added when those " +
-                    "challenges ship.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             Spacer(Modifier.height(8.dp))
             if (state.missingPermissions.isNotEmpty()) {
                 Button(onClick = onGrant, modifier = Modifier.fillMaxWidth()) {
@@ -201,10 +202,13 @@ private fun PermissionRow(label: String, granted: Boolean) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val icon = when {
+            label.startsWith("Steps") -> Icons.AutoMirrored.Filled.DirectionsRun
+            label.startsWith("Sleep") -> Icons.Filled.Bedtime
+            else -> Icons.Filled.Favorite
+        }
         Icon(
-            // v1 exposes a single step row; keep the run icon even for the
-            // longer "Steps — powers your step challenges" label.
-            if (label.startsWith("Steps")) Icons.AutoMirrored.Filled.DirectionsRun else Icons.Filled.Favorite,
+            icon,
             contentDescription = null,
             tint = if (granted) SuccessGreen else MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -332,6 +336,7 @@ private fun DailySummaryCard(
     today: LocalDate,
     onRefresh: () -> Unit,
     onSyncNow: () -> Unit,
+    onOpenHrTest: () -> Unit = {},
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -374,8 +379,9 @@ private fun DailySummaryCard(
                         modifier = Modifier.weight(1f),
                     )
                     MetricMiniCard(
-                        label = "Avg HR",
+                        label = "Avg HR (Test)",
                         value = summary.avgHr?.let { "%.0f bpm".format(it) } ?: "—",
+                        onClick = onOpenHrTest,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -423,18 +429,39 @@ private fun DailySummaryCard(
 }
 
 @Composable
-private fun MetricMiniCard(label: String, value: String, modifier: Modifier = Modifier) {
+private fun MetricMiniCard(
+    label: String,
+    value: String,
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    val cardModifier = if (onClick != null) {
+        modifier.clickable { onClick() }
+    } else {
+        modifier
+    }
     Card(
-        modifier = modifier,
+        modifier = cardModifier,
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(Modifier.padding(12.dp)) {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                if (onClick != null) {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = "Test HR",
+                        tint = AccentOrange,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }

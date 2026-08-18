@@ -3,5 +3,6 @@
     <string name="app_name">HamGhadam همقدم</string>
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_challenges">Challenges</string>
-    <string name="nav_settings">Account</string>
+    <string name="nav_friends">Friends</string>
+    <string name="nav_settings">Profile</string>
 </resources>

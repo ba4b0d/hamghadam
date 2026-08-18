@@ -5,16 +5,24 @@ import com.fitnessapp.android.data.model.ChallengeCodec
 import com.fitnessapp.android.data.model.DailySummary
 import com.fitnessapp.android.data.model.DailySummaryCodec
 import com.fitnessapp.android.data.model.FcmRegistration
+import com.fitnessapp.android.data.model.FriendProfile
+import com.fitnessapp.android.data.model.Friendship
 import com.fitnessapp.android.data.model.InviteInfo
 import com.fitnessapp.android.data.model.Leaderboard
+import com.fitnessapp.android.data.model.PendingFriendRequest
+import com.fitnessapp.android.data.model.SocialCodec
+import com.fitnessapp.android.data.model.UserProfile
+import com.fitnessapp.android.data.model.UserPublicProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 sealed class ApiResult<out T> {
@@ -30,7 +38,11 @@ data class AuthSession(
     val token: String,
     val expiresIn: Int,
     val userId: Int? = null,
+    val email: String? = null,
     val displayName: String? = null,
+    val avatarUrl: String? = null,
+    val bio: String? = null,
+    val authProvider: String? = null,
 )
 
 /** Thin OkHttp client for the BE-C1 API (register/login/daily ingest). */
@@ -66,6 +78,16 @@ class ApiClient(private val baseUrlProvider: () -> String) {
                 .put("password", password)
             val request = Request.Builder()
                 .url("${base()}/auth/login")
+                .post(body.toString().toRequestBody(jsonMedia))
+                .build()
+            executeAuth(request)
+        }
+
+    suspend fun loginWithGoogle(idToken: String): ApiResult<AuthSession> =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("id_token", idToken)
+            val request = Request.Builder()
+                .url("${base()}/auth/google")
                 .post(body.toString().toRequestBody(jsonMedia))
                 .build()
             executeAuth(request)
@@ -361,6 +383,241 @@ class ApiClient(private val baseUrlProvider: () -> String) {
         }
 
     // ------------------------------------------------------------------
+    // V1.2 Social — profile, bio, avatar upload, search, friends
+    // ------------------------------------------------------------------
+
+    suspend fun getMe(token: String): ApiResult<UserProfile> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/users/me")
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val user = try {
+                        SocialCodec.userProfileFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (user == null) ApiResult.Failure("Unreadable user profile") else ApiResult.Success(user, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun updateBio(token: String, bio: String?): ApiResult<UserProfile> =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().apply {
+                if (bio == null) put("bio", JSONObject.NULL) else put("bio", bio)
+            }
+            val request = Request.Builder()
+                .url("${base()}/users/me/bio")
+                .addHeader("Authorization", "Bearer $token")
+                .patch(body.toString().toRequestBody(jsonMedia))
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val user = try {
+                        SocialCodec.userProfileFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (user == null) ApiResult.Failure("Unreadable user profile") else ApiResult.Success(user, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun updateProfile(
+        token: String,
+        displayName: String? = null,
+        bio: String? = null,
+        location: String? = null,
+        tzOffset: Int? = null,
+    ): ApiResult<UserProfile> =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().apply {
+                displayName?.let { put("display_name", it) }
+                bio?.let { put("bio", it) }
+                location?.let { put("location", it) }
+                tzOffset?.let { put("tz_offset", it) }
+            }
+            val request = Request.Builder()
+                .url("${base()}/users/me")
+                .addHeader("Authorization", "Bearer $token")
+                .patch(body.toString().toRequestBody(jsonMedia))
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val user = try {
+                        SocialCodec.userProfileFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (user == null) ApiResult.Failure("Unreadable user profile") else ApiResult.Success(user, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun uploadAvatar(
+        token: String,
+        imageBytes: ByteArray,
+        mimeType: String = "image/jpeg",
+        filename: String = "avatar.jpg",
+    ): ApiResult<String> =
+        withContext(Dispatchers.IO) {
+            val multipartBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart(
+                    "file",
+                    filename,
+                    imageBytes.toRequestBody(mimeType.toMediaType())
+                )
+                .build()
+            val request = Request.Builder()
+                .url("${base()}/users/me/avatar")
+                .addHeader("Authorization", "Bearer $token")
+                .post(multipartBody)
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val avatarUrl = try {
+                        SocialCodec.avatarUploadResponseFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (avatarUrl == null) ApiResult.Failure("Unreadable avatar response") else ApiResult.Success(avatarUrl, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun searchUsers(token: String, query: String): ApiResult<List<UserPublicProfile>> =
+        withContext(Dispatchers.IO) {
+            val encodedQ = URLEncoder.encode(query.trim(), "UTF-8")
+            val request = Request.Builder()
+                .url("${base()}/users/search?q=$encodedQ")
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> ApiResult.Success(SocialCodec.userPublicListFromText(r.text), r.code)
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun sendFriendRequest(token: String, targetUserId: Int): ApiResult<Friendship> =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("target_user_id", targetUserId)
+            val request = Request.Builder()
+                .url("${base()}/friends/request")
+                .addHeader("Authorization", "Bearer $token")
+                .post(body.toString().toRequestBody(jsonMedia))
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val friendship = try {
+                        SocialCodec.friendshipFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (friendship == null) ApiResult.Failure("Unreadable friendship payload") else ApiResult.Success(friendship, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun acceptFriendRequest(token: String, requestId: Int): ApiResult<Friendship> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/friends/accept/$requestId")
+                .addHeader("Authorization", "Bearer $token")
+                .post("{}".toRequestBody(jsonMedia))
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val friendship = try {
+                        SocialCodec.friendshipFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (friendship == null) ApiResult.Failure("Unreadable friendship payload") else ApiResult.Success(friendship, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun rejectFriendRequest(token: String, requestId: Int): ApiResult<Friendship> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/friends/reject/$requestId")
+                .addHeader("Authorization", "Bearer $token")
+                .post("{}".toRequestBody(jsonMedia))
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> {
+                    val friendship = try {
+                        SocialCodec.friendshipFromJson(JSONObject(r.text))
+                    } catch (_: Exception) {
+                        null
+                    }
+                    if (friendship == null) ApiResult.Failure("Unreadable friendship payload") else ApiResult.Success(friendship, r.code)
+                }
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun deleteFriend(token: String, friendId: Int): ApiResult<Unit> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/friends/$friendId")
+                .addHeader("Authorization", "Bearer $token")
+                .delete()
+                .build()
+            try {
+                ok.newCall(request).execute().use { resp ->
+                    val text = resp.body?.string().orEmpty()
+                    when (resp.code) {
+                        in 200..299 -> ApiResult.Success(Unit, resp.code)
+                        401 -> ApiResult.Unauthorized(parseDetail(text) ?: "Unauthorized")
+                        404 -> ApiResult.Failure("Friend not found")
+                        else -> ApiResult.Failure("HTTP ${resp.code}: ${text.take(200)}")
+                    }
+                }
+            } catch (e: IOException) {
+                ApiResult.Failure(e.message ?: "Network error")
+            }
+        }
+
+    suspend fun listFriends(token: String): ApiResult<List<FriendProfile>> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/friends")
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> ApiResult.Success(SocialCodec.friendListFromText(r.text), r.code)
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    suspend fun listPendingRequests(token: String): ApiResult<List<PendingFriendRequest>> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/friends/requests/pending")
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> ApiResult.Success(SocialCodec.pendingRequestListFromText(r.text), r.code)
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
+    // ------------------------------------------------------------------
     // Raw helpers
     // ------------------------------------------------------------------
 
@@ -387,7 +644,11 @@ class ApiClient(private val baseUrlProvider: () -> String) {
                                 token = json.getString("access_token"),
                                 expiresIn = json.optInt("expires_in", 0),
                                 userId = user?.optInt("id"),
+                                email = user?.optString("email"),
                                 displayName = user?.let { if (it.isNull("display_name")) null else it.optString("display_name") },
+                                avatarUrl = user?.let { if (it.isNull("avatar_url")) null else it.optString("avatar_url") },
+                                bio = user?.let { if (it.isNull("bio")) null else it.optString("bio") },
+                                authProvider = user?.optString("auth_provider", "email"),
                             ),
                             resp.code,
                         )

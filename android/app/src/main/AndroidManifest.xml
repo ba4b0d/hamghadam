@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Health Connect read permissions (declaration-only; actual grants happen
-         through the Health Connect consent UI via PermissionController).
-         v1 scope is STEPS ONLY: only READ_STEPS is requested/surfaced. Sleep and
-         heart-rate will be declared and requested only when a feature (sleep/HR
-         challenge) actually uses them. -->
+         through the Health Connect consent UI via PermissionController). -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+
     <!-- Android 15+ (API 35+): enables background reads. Declared always; the
          consent UI only shows it on devices that support it. When not granted,
          the app falls back to foreground-only sync. -->
@@ -84,7 +84,7 @@
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
             android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".permissions.PermissionsRationaleActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />

@@ -30,6 +30,18 @@ class AuthStore(context: Context) {
         get() = prefs.getString(KEY_DISPLAY_NAME, null)
         set(value) = prefs.edit().putString(KEY_DISPLAY_NAME, value).apply()
 
+    var avatarUrl: String?
+        get() = prefs.getString(KEY_AVATAR_URL, null)
+        set(value) = prefs.edit().putString(KEY_AVATAR_URL, value).apply()
+
+    var bio: String?
+        get() = prefs.getString(KEY_BIO, null)
+        set(value) = prefs.edit().putString(KEY_BIO, value).apply()
+
+    var authProvider: String?
+        get() = prefs.getString(KEY_AUTH_PROVIDER, "email")
+        set(value) = prefs.edit().putString(KEY_AUTH_PROVIDER, value).apply()
+
     /** FCM/device registration token (Firebase token, or dev:… when Firebase is not configured). */
     var fcmToken: String?
         get() = prefs.getString(KEY_FCM_TOKEN, null)
@@ -76,6 +88,9 @@ class AuthStore(context: Context) {
             .remove(KEY_EMAIL)
             .remove(KEY_USER_ID)
             .remove(KEY_DISPLAY_NAME)
+            .remove(KEY_AVATAR_URL)
+            .remove(KEY_BIO)
+            .remove(KEY_AUTH_PROVIDER)
             .remove(KEY_FCM_REGISTERED)
             .apply()
     }
@@ -86,6 +101,9 @@ class AuthStore(context: Context) {
         private const val KEY_EMAIL = "email"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_DISPLAY_NAME = "display_name"
+        private const val KEY_AVATAR_URL = "avatar_url"
+        private const val KEY_BIO = "bio"
+        private const val KEY_AUTH_PROVIDER = "auth_provider"
         private const val KEY_FCM_TOKEN = "fcm_token"
         private const val KEY_FCM_REGISTERED = "fcm_token_registered"
         private const val KEY_BASE_URL = "base_url"
