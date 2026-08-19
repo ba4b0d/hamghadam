@@ -31,9 +31,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -96,6 +98,7 @@ fun DashboardScreen(
  * Stateless dashboard content — testable in Compose UI tests without the
  * ViewModel/DI container. [syncLine] is pre-formatted by the caller.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardContent(
     state: DashboardUiState,
@@ -108,13 +111,18 @@ fun DashboardContent(
     syncLine: String?,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    PullToRefreshBox(
+        isRefreshing = state.reading,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxSize(),
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
         Text(
             text = "Dashboard",
             style = MaterialTheme.typography.headlineMedium,
@@ -150,6 +158,7 @@ fun DashboardContent(
             HcStatus.UNKNOWN -> UnavailableCard("Could not determine Health Connect availability.")
         }
     }
+}
 }
 
 @Composable
@@ -395,20 +404,18 @@ private fun DailySummaryCard(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onRefresh, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Refresh")
-                    }
-                    Button(onClick = onSyncNow, modifier = Modifier.weight(1f)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = onSyncNow,
+                        modifier = Modifier.weight(1f),
+                    ) {
                         if (state.syncing) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
                         } else {
-                            Icon(Icons.Filled.Sync, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Filled.Sync, contentDescription = null, modifier = Modifier.size(18.dp))
                         }
-                        Spacer(Modifier.width(4.dp))
-                        Text("Sync")
+                        Spacer(Modifier.width(6.dp))
+                        Text("Sync data")
                     }
                     val context = LocalContext.current
                     Button(
@@ -426,9 +433,9 @@ private fun DailySummaryCard(
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     ) {
-                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Story 📲")
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Share Story 📲")
                     }
                 }
             }
