@@ -133,7 +133,7 @@ fun ChallengesScreen(
     }
 
     if (state.createOpen) {
-        CreateChallengeDialog(
+        CreateChallengeScreen(
             state = state,
             onTitleChange = viewModel::onCreateTitle,
             onMetricChange = viewModel::onCreateMetric,
@@ -142,7 +142,7 @@ fun ChallengesScreen(
             onInviteOnlyChange = viewModel::onCreateInviteOnly,
             onMaxParticipantsChange = viewModel::onCreateMaxParticipants,
             onSubmit = { viewModel.submitCreate() },
-            onDismiss = { viewModel.closeCreate() },
+            onBack = { viewModel.closeCreate() },
         )
     }
 

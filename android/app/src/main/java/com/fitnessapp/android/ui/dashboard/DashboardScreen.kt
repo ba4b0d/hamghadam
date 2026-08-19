@@ -435,7 +435,7 @@ private fun DailySummaryCard(
                     ) {
                         Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Share Story 📲")
+                        Text("Share Story")
                     }
                 }
             }

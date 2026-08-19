@@ -1,25 +1,25 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="HamGhadam همقدم — Walk together. One app for every watch.">
+  <img src="./assets/readme/hero.svg" width="100%" alt="HamPa هم پا — Walk together. One app for every watch.">
 </p>
 
 <p align="center">
-  <strong>همقدم</strong> — "walking in step together". One Android app that unifies health data from every watch ecosystem you own, then turns daily movement into friendly challenges.
+  <strong>هم پا</strong> — "walking in step together". One Android app that unifies health data from every watch ecosystem you own, then turns daily movement into friendly challenges.
 </p>
 
 <p align="center">
-  <a href="#why-hamghadam"><img src="https://img.shields.io/badge/why-why%20hamghadam-F15B2A?style=flat-square" alt="Why HamGhadam"></a>
+  <a href="#why-hampa"><img src="https://img.shields.io/badge/why-why%20hampa-F15B2A?style=flat-square" alt="Why HamPa"></a>
   <a href="#proof"><img src="https://img.shields.io/badge/proof-screenshots-FFBA08?style=flat-square" alt="Proof screenshots"></a>
   <a href="#how-it-works"><img src="https://img.shields.io/badge/architecture-watch%20to%20leaderboard-2A1E16?style=flat-square" alt="Architecture watch to leaderboard"></a>
-  <a href="#roadmap"><img src="https://img.shields.io/badge/roadmap-v1%20v1.1%20v1.2-F15B2A?style=flat-square" alt="Roadmap v1 v1.1 v1.2"></a>
+  <a href="#roadmap"><img src="https://img.shields.io/badge/roadmap-v1%20v1.1%20v1.2%20v0.6-F15B2A?style=flat-square" alt="Roadmap v1 v1.1 v1.2 v0.6"></a>
 </p>
 
 ---
 
-## Why HamGhadam
+## Why HamPa
 
 Your Samsung watch logs steps. Your Pixel watch logs heart rate. Your Fitbit tracks sleep. Google Fit and Samsung Health each speak their own dialect — so you end up with five apps and no single answer to *"how did I actually do today?"*
 
-HamGhadam solves that with **one source of truth**: it reads every ecosystem through Android's Health Connect, stores scores on a backend you own, and lets you and your friends race toward the same goal.
+HamPa solves that with **one source of truth**: it reads every ecosystem through Android's Health Connect, stores scores on a backend you own, and lets you and your friends race toward the same goal.
 
 - **Truly cross-ecosystem** — Samsung, Google/Pixel, Nothing/CMF, and Fitbit watches all feed Health Connect; HamGhadam reads them all.
 - **Compliance-ready by design** — v1 asks for exactly the permissions it uses (steps only), so the Play listing can be honest from day one.
