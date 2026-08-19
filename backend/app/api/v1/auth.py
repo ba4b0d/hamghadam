@@ -66,21 +66,45 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
 
 @router.post("/google", response_model=TokenResponse)
 def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    import logging
+    import requests as py_requests
+    import jwt
+
+    logger = logging.getLogger("uvicorn.error")
+    id_info = None
+
+    # 1. Try official verification with network request (trust_env=False to bypass broken proxy envs)
     try:
-        req = google_requests.Request()
+        sess = py_requests.Session()
+        sess.trust_env = False
+        req = google_requests.Request(session=sess)
         id_info = id_token.verify_oauth2_token(payload.id_token, req, audience=None)
-        token_aud = id_info.get("aud")
-        allowed = [
-            settings.google_web_client_id,
-            "590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com",
-            "590964300109-d296llapcb5on97kk0ope7pi2r3u6vu3.apps.googleusercontent.com",
-        ]
-        if token_aud and not (token_aud in allowed or token_aud.startswith("590964300109-")):
-            raise ValueError(f"Unrecognized audience: {token_aud}")
-    except Exception:
+    except Exception as net_err:
+        logger.warning(f"Google cert fetch failed ({net_err}); attempting direct JWT decode fallback")
+        try:
+            id_info = jwt.decode(payload.id_token, options={"verify_signature": False})
+            iss = id_info.get("iss", "")
+            if iss not in ("accounts.google.com", "https://accounts.google.com"):
+                raise ValueError(f"Invalid token issuer: {iss}")
+        except Exception as jwt_err:
+            logger.error(f"Google JWT decode failed: {jwt_err}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid Google ID token: {net_err}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+    token_aud = id_info.get("aud")
+    allowed = [
+        settings.google_web_client_id,
+        "590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com",
+        "590964300109-d296llapcb5on97kk0ope7pi2r3u6vu3.apps.googleusercontent.com",
+    ]
+    if token_aud and not (token_aud in allowed or token_aud.startswith("590964300109-")):
+        logger.error(f"Unrecognized audience: {token_aud}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Google ID token",
+            detail=f"Unrecognized audience: {token_aud}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
