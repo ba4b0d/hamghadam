@@ -173,9 +173,9 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_hamghadam_mark),
+            painter = painterResource(id = R.drawable.ic_hampa_logo),
             contentDescription = "HamPa Logo",
-            modifier = Modifier.size(100.dp),
+            modifier = Modifier.size(110.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
