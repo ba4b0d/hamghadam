@@ -174,14 +174,14 @@ fun LoginScreen(
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_hamghadam_mark),
-            contentDescription = "HamGhadam Logo",
-            modifier = Modifier.size(72.dp),
+            contentDescription = "HamPa Logo",
+            modifier = Modifier.size(100.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "HamGhadam همقدم",
+            text = "HamPa هم پا",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,

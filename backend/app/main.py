@@ -17,7 +17,7 @@ def create_app() -> FastAPI:
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
     app = FastAPI(
-        title="Fitness App API",
+        title="HamPa API",
         version="0.1.0",
         description="Backend for the all-in-one fitness Android app: users, auth, "
         "device registration, Health Connect daily ingest, and social features.",

@@ -56,7 +56,7 @@ object ShareStoryHelper {
 
             textPaint.color = 0xFFF15B2A.toInt()
             textPaint.textSize = 54f
-            canvas.drawText("HAMGHADAM · همقدم", width / 2f, 440f, textPaint)
+            canvas.drawText("HAMPA · هم پا", width / 2f, 440f, textPaint)
 
             textPaint.color = 0xFF635A53.toInt()
             textPaint.textSize = 36f
@@ -97,7 +97,7 @@ object ShareStoryHelper {
             textPaint.color = 0xFFFFFFFF.toInt()
             textPaint.textSize = 42f
             textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            canvas.drawText("همقدم — باهم تا هدف 🚀", width / 2f, height - 200f, textPaint)
+            canvas.drawText("هم پا — باهم تا هدف 🚀", width / 2f, height - 200f, textPaint)
 
             textPaint.textSize = 32f
             textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
