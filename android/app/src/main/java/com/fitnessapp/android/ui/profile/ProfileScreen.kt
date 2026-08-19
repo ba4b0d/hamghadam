@@ -35,6 +35,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -350,6 +354,46 @@ fun ProfileScreen(
                 value = state.stats.totalChallenges.toString(),
                 modifier = Modifier.weight(1f),
             )
+        }
+
+        // App Theme Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "App Theme",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val currentMode = state.themeMode
+                    val options = listOf(
+                        "SYSTEM" to "System 📱",
+                        "LIGHT" to "Light ☀️",
+                        "DARK" to "Dark 🌙"
+                    )
+                    options.forEach { (modeKey, label) ->
+                        val selected = currentMode == modeKey
+                        FilterChip(
+                            selected = selected,
+                            onClick = { viewModel.setThemeMode(modeKey) },
+                            label = { Text(label, style = MaterialTheme.typography.labelMedium) },
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White,
+                            )
+                        )
+                    }
+                }
+            }
         }
 
         // Account Actions

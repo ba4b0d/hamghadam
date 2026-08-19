@@ -14,8 +14,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         routeExternalIntent(intent)
+        val container = (application as FitnessApp).container
         setContent {
-            FitnessAppTheme {
+            val themeModeStr = container.authStore.themeMode
+            val themeMode = try { com.fitnessapp.android.ui.theme.AppThemeMode.valueOf(themeModeStr) } catch (_: Exception) { com.fitnessapp.android.ui.theme.AppThemeMode.SYSTEM }
+            FitnessAppTheme(themeMode = themeMode) {
                 MainScreen()
             }
         }

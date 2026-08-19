@@ -52,6 +52,10 @@ class AuthStore(context: Context) {
         get() = prefs.getBoolean(KEY_FCM_REGISTERED, false)
         set(value) = prefs.edit().putBoolean(KEY_FCM_REGISTERED, value).apply()
 
+    var themeMode: String
+        get() = prefs.getString(KEY_THEME_MODE, "SYSTEM") ?: "SYSTEM"
+        set(value) = prefs.edit().putString(KEY_THEME_MODE, value).apply()
+
     /** Backend base URL including /api/v1. Defaulted via BuildConfig. */
     var baseUrl: String
         get() {
@@ -107,6 +111,7 @@ class AuthStore(context: Context) {
         private const val KEY_FCM_TOKEN = "fcm_token"
         private const val KEY_FCM_REGISTERED = "fcm_token_registered"
         private const val KEY_BASE_URL = "base_url"
+        private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_LAST_SYNC_DATE = "last_sync_date"
         private const val KEY_LAST_SYNC_AT = "last_sync_at"
         private const val KEY_LAST_SYNC_STATUS = "last_sync_status"

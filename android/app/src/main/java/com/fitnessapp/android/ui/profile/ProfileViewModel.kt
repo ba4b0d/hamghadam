@@ -17,6 +17,7 @@ import java.time.LocalDate
 data class ProfileUiState(
     val user: UserProfile? = null,
     val stats: UserStats = UserStats(),
+    val themeMode: String = "SYSTEM",
     val isLoading: Boolean = false,
     val isUpdatingBio: Boolean = false,
     val isUploadingAvatar: Boolean = false,
@@ -29,6 +30,7 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _state = MutableStateFlow(
         ProfileUiState(
+            themeMode = container.authStore.themeMode,
             user = container.authStore.userId?.let {
                 UserProfile(
                     id = it,
@@ -45,6 +47,11 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         loadProfile()
+    }
+
+    fun setThemeMode(mode: String) {
+        container.authStore.themeMode = mode
+        _state.update { it.copy(themeMode = mode) }
     }
 
     fun loadProfile() {
