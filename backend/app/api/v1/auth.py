@@ -68,8 +68,15 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
 def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)) -> TokenResponse:
     try:
         req = google_requests.Request()
-        aud = settings.google_web_client_id if settings.google_web_client_id else None
-        id_info = id_token.verify_oauth2_token(payload.id_token, req, audience=aud)
+        id_info = id_token.verify_oauth2_token(payload.id_token, req, audience=None)
+        token_aud = id_info.get("aud")
+        allowed = [
+            settings.google_web_client_id,
+            "590964300109-p10jff24glu9mite50u27ho56jl79hml.apps.googleusercontent.com",
+            "590964300109-d296llapcb5on97kk0ope7pi2r3u6vu3.apps.googleusercontent.com",
+        ]
+        if token_aud and not (token_aud in allowed or token_aud.startswith("590964300109-")):
+            raise ValueError(f"Unrecognized audience: {token_aud}")
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
