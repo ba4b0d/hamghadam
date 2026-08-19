@@ -246,19 +246,20 @@ class HealthConnectRepository(private val context: Context) {
     }
 
     /**
-     * Intent that opens the Health Connect "connect your watch/app" matchmaking
-     * screen for the record types the app reads. Launch with an Activity context.
+     * Build an Intent to launch Health Connect Matchmaking or Health Connect Settings.
      */
     @OptIn(ExperimentalMatchmakingApi::class)
-    suspend fun matchmakingIntent(): Intent? {
-        if (!matchmakingFeatureAvailable()) return null
-        val hc = clientOrNull() ?: return null
-        return try {
-            hc.createMatchmakingIntent(matchmakingRequest())
-        } catch (e: Exception) {
-            Log.w(TAG, "createMatchmakingIntent failed", e)
-            null
+    suspend fun matchmakingIntent(): Intent {
+        val hc = clientOrNull()
+        if (hc != null && matchmakingFeatureAvailable()) {
+            try {
+                val intent = hc.createMatchmakingIntent(matchmakingRequest())
+                if (intent != null) return intent
+            } catch (e: Exception) {
+                Log.w(TAG, "createMatchmakingIntent failed, using settings fallback", e)
+            }
         }
+        return Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS")
     }
 
     @OptIn(ExperimentalMatchmakingApi::class)

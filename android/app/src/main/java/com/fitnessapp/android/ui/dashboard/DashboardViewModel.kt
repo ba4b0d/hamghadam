@@ -178,11 +178,16 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     /** Open the Health Connect "connect your watch/apps" matchmaking screen. */
     fun openMatchmaking(context: android.content.Context) {
         viewModelScope.launch {
-            val intent: Intent? = container.healthRepository.matchmakingIntent()
-            if (intent != null) {
+            try {
+                val intent = container.healthRepository.matchmakingIntent()
                 context.startActivity(intent)
-            } else {
-                _state.update { it.copy(error = "Matchmaking is not available right now") }
+            } catch (e: Exception) {
+                try {
+                    val fallbackIntent = Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS")
+                    context.startActivity(fallbackIntent)
+                } catch (e2: Exception) {
+                    _state.update { it.copy(error = "Could not open Health Connect settings") }
+                }
             }
         }
     }

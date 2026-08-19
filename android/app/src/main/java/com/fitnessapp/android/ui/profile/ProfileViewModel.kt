@@ -131,7 +131,7 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
                         it.copy(
                             isUpdatingBio = false,
                             user = updated,
-                            message = "Bio updated successfully",
+                            message = null,
                         )
                     }
                 }
