@@ -2,7 +2,9 @@ package com.fitnessapp.android.ui.challenges
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -23,10 +25,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,7 +39,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -57,20 +57,20 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
-data class RealisticPreset(
+data class ProportionalPreset(
     val icon: String,
     val title: String,
     val metric: String,
-    val description: String,
+    val goalText: String,
 )
 
-val REALISTIC_PRESETS = listOf(
-    RealisticPreset("🏃", "5km Daily Runner", "distance_km", "Complete 5 kilometers daily"),
-    RealisticPreset("👟", "10,000 Step Master", "steps", "Hit the gold standard 10k daily steps"),
-    RealisticPreset("🔥", "600 kcal Fat Burner", "calories_kcal", "Burn 600 active calories"),
-    RealisticPreset("🌅", "Early Bird Morning Walk", "steps", "Start your morning with 3,000 steps"),
-    RealisticPreset("🏔️", "Weekly 25km Ultra", "distance_km", "Tackle 25km distance over 7 days"),
-    RealisticPreset("⚡", "Daily 500 kcal Streak", "calories_kcal", "Keep a 500 kcal daily active burn"),
+val PROPORTIONAL_PRESETS = listOf(
+    ProportionalPreset("🏃", "5km Daily Runner", "distance_km", "5.0 km / day"),
+    ProportionalPreset("👟", "10k Step Master", "steps", "10,000 steps / day"),
+    ProportionalPreset("🔥", "600 kcal Burner", "calories_kcal", "600 kcal / day"),
+    ProportionalPreset("🌅", "Morning 3k Walk", "steps", "3,000 steps"),
+    ProportionalPreset("🏔️", "25km Ultra Week", "distance_km", "25.0 km total"),
+    ProportionalPreset("⚡", "500 kcal Streak", "calories_kcal", "500 kcal streak"),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,7 +89,7 @@ fun CreateChallengeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Challenge", fontWeight = FontWeight.Bold) },
+                title = { Text("Create Challenge", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -102,8 +102,8 @@ fun CreateChallengeScreen(
         },
         bottomBar = {
             Surface(
-                tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
+                tonalElevation = 6.dp,
+                shadowElevation = 6.dp,
                 color = MaterialTheme.colorScheme.surface,
             ) {
                 Box(modifier = Modifier.padding(16.dp)) {
@@ -112,13 +112,16 @@ fun CreateChallengeScreen(
                         enabled = state.createTitle.isNotBlank() && !state.createBusy,
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
                     ) {
                         if (state.createBusy) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
                         } else {
                             Icon(Icons.Filled.EmojiEvents, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Create Challenge 🚀", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Create Challenge", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -131,48 +134,77 @@ fun CreateChallengeScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            // Realistic Presets Section
-            Text("Realistic Presets", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            ) {
-                REALISTIC_PRESETS.forEach { preset ->
-                    val isSelected = state.createTitle == preset.title && state.createMetric == preset.metric
-                    Card(
-                        onClick = {
-                            onTitleChange(preset.title)
-                            onMetricChange(preset.metric)
-                        },
-                        modifier = Modifier.width(200.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                        ),
+            // Section 1: Presets Grid (2 Columns, Proportional)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Quick Preset Templates", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                }
+
+                // 2-Column Proportional Grid (3 Rows)
+                for (rowIdx in 0..2) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Text(preset.icon, style = MaterialTheme.typography.headlineMedium)
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                preset.title,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                preset.description,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                        for (colIdx in 0..1) {
+                            val presetIdx = rowIdx * 2 + colIdx
+                            if (presetIdx < PROPORTIONAL_PRESETS.size) {
+                                val preset = PROPORTIONAL_PRESETS[presetIdx]
+                                val isSelected = state.createTitle == preset.title && state.createMetric == preset.metric
+
+                                Card(
+                                    onClick = {
+                                        onTitleChange(preset.title)
+                                        onMetricChange(preset.metric)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                    ),
+                                    border = if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null,
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                            modifier = Modifier.size(36.dp),
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(preset.icon, style = MaterialTheme.typography.titleSmall)
+                                            }
+                                        }
+                                        Spacer(Modifier.width(10.dp))
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                preset.title,
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                maxLines = 1,
+                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                            )
+                                            Text(
+                                                preset.goalText,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // Challenge Form Card
+            // Section 2: Custom Form Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -180,7 +212,7 @@ fun CreateChallengeScreen(
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text("Challenge Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
@@ -190,7 +222,7 @@ fun CreateChallengeScreen(
                         label = { Text("Challenge Title") },
                         placeholder = { Text("e.g. 5km Daily Runner") },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
                     )
 
@@ -208,12 +240,14 @@ fun CreateChallengeScreen(
                             FilterChip(
                                 selected = state.createMetric == key,
                                 onClick = { onMetricChange(key) },
-                                label = { Text(label) },
+                                label = { Text(label, fontWeight = FontWeight.Medium) },
+                                shape = RoundedCornerShape(12.dp),
                             )
                         }
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Proportional Date Pickers
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         ScreenDateTimeField(
                             label = "Starts",
                             value = state.createStart,
@@ -228,6 +262,7 @@ fun CreateChallengeScreen(
                         )
                     }
 
+                    // Invite Only Switch
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -235,7 +270,7 @@ fun CreateChallengeScreen(
                         Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Invite Only", fontWeight = FontWeight.SemiBold)
+                            Text("Invite Only", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
                             Text("Requires join code to enter", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Switch(
@@ -250,7 +285,7 @@ fun CreateChallengeScreen(
                         label = { Text("Max Participants (Optional)") },
                         placeholder = { Text("Unlimited if blank") },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
                     )
 
@@ -296,7 +331,7 @@ private fun ScreenDateTimeField(
             ).show()
         },
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(Modifier.padding(12.dp)) {
