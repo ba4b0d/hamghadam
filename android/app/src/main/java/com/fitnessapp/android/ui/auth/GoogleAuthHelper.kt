@@ -9,6 +9,8 @@ import androidx.credentials.exceptions.GetCredentialException
 import com.fitnessapp.android.BuildConfig
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import java.security.MessageDigest
+import java.util.UUID
 
 sealed class GoogleAuthResult {
     data class Success(val idToken: String) : GoogleAuthResult()
@@ -24,10 +26,16 @@ class GoogleAuthHelper(
 
     suspend fun getGoogleIdToken(): GoogleAuthResult {
         return try {
+            val rawNonce = UUID.randomUUID().toString()
+            val md = MessageDigest.getInstance("SHA-256")
+            val digest = md.digest(rawNonce.toByteArray())
+            val nonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
                 .setServerClientId(serverClientId)
                 .setAutoSelectEnabled(false)
+                .setNonce(nonce)
                 .build()
 
             val request = GetCredentialRequest.Builder()
@@ -49,7 +57,12 @@ class GoogleAuthHelper(
         } catch (e: GetCredentialCancellationException) {
             GoogleAuthResult.Cancelled
         } catch (e: GetCredentialException) {
-            GoogleAuthResult.Error(e.message ?: "Google Sign-In failed")
+            val details = if (e.message?.contains("No credential", ignoreCase = true) == true) {
+                "No credential available. Please ensure:\n1. Your Google Account is added under 'Test Users' on the OAuth Consent Screen in Google Cloud Console.\n2. A Google account is signed into Google Play Services on this device."
+            } else {
+                e.message ?: "Google Sign-In failed"
+            }
+            GoogleAuthResult.Error(details)
         } catch (e: Exception) {
             GoogleAuthResult.Error(e.message ?: "Google Sign-In error")
         }
