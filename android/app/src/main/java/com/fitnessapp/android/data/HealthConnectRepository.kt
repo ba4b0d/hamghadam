@@ -254,12 +254,14 @@ class HealthConnectRepository(private val context: Context) {
         if (hc != null && matchmakingFeatureAvailable()) {
             try {
                 val intent = hc.createMatchmakingIntent(matchmakingRequest())
-                if (intent != null) return intent
+                if (intent != null) return intent.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
             } catch (e: Exception) {
                 Log.w(TAG, "createMatchmakingIntent failed, using settings fallback", e)
             }
         }
-        return Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS")
+        return Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS").apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
     }
 
     @OptIn(ExperimentalMatchmakingApi::class)

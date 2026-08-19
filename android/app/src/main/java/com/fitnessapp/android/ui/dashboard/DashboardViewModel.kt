@@ -176,18 +176,31 @@ class DashboardViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Open the Health Connect "connect your watch/apps" matchmaking screen. */
+    /** Open Health Connect settings, standalone app, or Play Store. */
     fun openMatchmaking(context: android.content.Context) {
         viewModelScope.launch {
-            try {
-                val intent = container.healthRepository.matchmakingIntent()
-                context.startActivity(intent)
-            } catch (e: Exception) {
+            val hcPackageIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.apps.healthdata")
+            val intentsToTry = listOfNotNull(
+                Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS"),
+                Intent("com.google.android.apps.healthdata.HEALTH_CONNECT_SETTINGS"),
+                hcPackageIntent,
+                Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.healthdata")),
+                Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"))
+            )
+
+            var launched = false
+            for (intent in intentsToTry) {
                 try {
-                    val fallbackIntent = Intent("android.health.connect.action.HEALTH_CONNECT_SETTINGS")
-                    context.startActivity(fallbackIntent)
-                } catch (e2: Exception) {
-                    _state.update { it.copy(error = "Could not open Health Connect settings") }
+                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    launched = true
+                    break
+                } catch (e: Exception) {
+                    android.util.Log.w("DashboardViewModel", "Could not launch intent: ${intent.action}", e)
                 }
+            }
+            if (!launched) {
+                _state.update { it.copy(error = "Could not open Health Connect on this device") }
             }
         }
     }
