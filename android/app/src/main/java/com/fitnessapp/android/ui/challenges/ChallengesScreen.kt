@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -453,11 +454,33 @@ fun CreateChallengeDialog(
         title = { Text("New challenge") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Quick Presets", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                ) {
+                    listOf(
+                        Triple("🏃 5km Run", "5km Morning Run", "distance_km"),
+                        Triple("👟 3,000 Steps", "3,000 Step Dash", "steps"),
+                        Triple("🔥 500 kcal", "500 kcal Burner", "calories_kcal"),
+                        Triple("🏆 10k Steps", "Weekend 10k Steps", "steps"),
+                    ).forEach { (presetLabel, presetTitle, presetMetric) ->
+                        FilterChip(
+                            selected = state.createTitle == presetTitle && state.createMetric == presetMetric,
+                            onClick = {
+                                onTitleChange(presetTitle)
+                                onMetricChange(presetMetric)
+                            },
+                            label = { Text(presetLabel) },
+                        )
+                    }
+                }
+
                 OutlinedTextField(
                     value = state.createTitle,
                     onValueChange = onTitleChange,
                     label = { Text("Title") },
-                    placeholder = { Text("e.g. 10k steps weekend") },
+                    placeholder = { Text("e.g. 5km Morning Run") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -465,12 +488,13 @@ fun CreateChallengeDialog(
                 Text("Challenge Metric", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 ) {
                     listOf(
-                        "steps" to "Steps",
-                        "sleep_seconds" to "Sleep",
-                        "avg_hr" to "Heart Rate",
+                        "steps" to "Steps 👟",
+                        "distance_km" to "Distance 📍 (km)",
+                        "calories_kcal" to "Calories 🔥 (kcal)",
+                        "sleep_seconds" to "Sleep 😴",
                     ).forEach { (key, label) ->
                         FilterChip(
                             selected = state.createMetric == key,

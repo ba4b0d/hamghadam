@@ -85,6 +85,8 @@ object ChallengeFormatters {
 
     fun formatTotal(metric: String, value: Double): String = when (metric) {
         "steps" -> formatSteps(value)
+        "distance_km" -> "%.2f km".format(Locale.getDefault(), value)
+        "calories_kcal" -> "%.0f kcal".format(Locale.getDefault(), value)
         "sleep_seconds" -> "%.1fh".format(Locale.getDefault(), value / 3600.0)
         "avg_hr" -> "%.0f bpm".format(Locale.getDefault(), value)
         else -> "%.0f".format(Locale.getDefault(), value)
