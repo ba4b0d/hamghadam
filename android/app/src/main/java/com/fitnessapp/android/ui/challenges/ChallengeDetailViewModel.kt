@@ -217,6 +217,24 @@ class ChallengeDetailViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun cancelChallenge(onCancelled: () -> Unit) {
+        val token = container.authStore.jwt ?: return
+        val id = loadedChallengeId ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(joinBusy = true, joinError = null) }
+            when (val result = container.apiClient.cancelChallenge(token, id)) {
+                is ApiResult.Success -> {
+                    _state.update { it.copy(joinBusy = false, notice = "Challenge cancelled") }
+                    onCancelled()
+                }
+                is ApiResult.Failure -> {
+                    _state.update { it.copy(joinBusy = false, joinError = "Failed to cancel challenge: ${result.detail}") }
+                }
+                else -> _state.update { it.copy(joinBusy = false, joinError = describe(result)) }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------
     // Invites
     // ------------------------------------------------------------------

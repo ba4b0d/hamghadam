@@ -294,6 +294,19 @@ class ApiClient(private val baseUrlProvider: () -> String) {
             }
         }
 
+    suspend fun cancelChallenge(token: String, id: Long): ApiResult<Unit> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/challenges/$id")
+                .addHeader("Authorization", "Bearer $token")
+                .delete()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> ApiResult.Success(Unit, r.code)
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
     /** PATCH /challenges/{id}/status — creator-only; draft→active→ended only. */
     suspend fun updateChallengeStatus(token: String, id: Long, status: String): ApiResult<Challenge> =
         withContext(Dispatchers.IO) {

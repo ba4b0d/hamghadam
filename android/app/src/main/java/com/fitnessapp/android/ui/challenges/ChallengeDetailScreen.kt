@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Group
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -102,6 +104,7 @@ fun ChallengeDetailScreen(
         onDismissInvite = { viewModel.dismissInvite() },
         onStartNow = { viewModel.setStatus("active") },
         onEndNow = { viewModel.setStatus("ended") },
+        onCancelChallenge = { viewModel.cancelChallenge(onCancelled = onBack) },
         onRefreshLeaderboard = { viewModel.refreshAll() },
         onShareInvite = { invite -> shareInvite(context, invite) },
         onCopyInvite = { invite -> copyInvite(context, invite) },
@@ -143,6 +146,7 @@ fun ChallengeDetailContent(
     onDismissInvite: () -> Unit,
     onStartNow: () -> Unit,
     onEndNow: () -> Unit,
+    onCancelChallenge: () -> Unit = {},
     onRefreshLeaderboard: () -> Unit,
     onShareInvite: (InviteInfo) -> Unit,
     onCopyInvite: (InviteInfo) -> Unit,
@@ -191,6 +195,7 @@ fun ChallengeDetailContent(
                         onInvite = onInvite,
                         onStartNow = onStartNow,
                         onEndNow = onEndNow,
+                        onCancelChallenge = onCancelChallenge,
                     )
                 } else if (state.isParticipant) {
                     ActionsCard(
@@ -202,6 +207,7 @@ fun ChallengeDetailContent(
                         onInvite = onInvite,
                         onStartNow = onStartNow,
                         onEndNow = onEndNow,
+                        onCancelChallenge = onCancelChallenge,
                     )
                 }
                 LeaderboardCard(
@@ -381,6 +387,7 @@ private fun ActionsCard(
     onInvite: () -> Unit,
     onStartNow: () -> Unit,
     onEndNow: () -> Unit,
+    onCancelChallenge: () -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -417,15 +424,51 @@ private fun ActionsCard(
                         Text("Invite friends")
                     }
                     if (state.isCreator) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            if (challenge.isDraft) {
-                                Button(onClick = onStartNow, enabled = !state.statusBusy, modifier = Modifier.weight(1f)) {
-                                    Text("Start now")
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                if (challenge.isDraft) {
+                                    Button(onClick = onStartNow, enabled = !state.statusBusy, modifier = Modifier.weight(1f)) {
+                                        Text("Start now")
+                                    }
+                                } else if (challenge.isActive) {
+                                    OutlinedButton(onClick = onEndNow, enabled = !state.statusBusy, modifier = Modifier.weight(1f)) {
+                                        Text("End now")
+                                    }
                                 }
-                            } else if (challenge.isActive) {
-                                OutlinedButton(onClick = onEndNow, enabled = !state.statusBusy, modifier = Modifier.weight(1f)) {
-                                    Text("End now")
-                                }
+                            }
+                            var showCancelConfirm by remember { mutableStateOf(false) }
+                            OutlinedButton(
+                                onClick = { showCancelConfirm = true },
+                                enabled = !state.joinBusy,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            ) {
+                                Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Cancel Challenge")
+                            }
+                            if (showCancelConfirm) {
+                                AlertDialog(
+                                    onDismissRequest = { showCancelConfirm = false },
+                                    title = { Text("Cancel Challenge?") },
+                                    text = { Text("Are you sure you want to cancel and delete this challenge? This cannot be undone.") },
+                                    confirmButton = {
+                                        Button(
+                                            onClick = {
+                                                showCancelConfirm = false
+                                                onCancelChallenge()
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                        ) {
+                                            Text("Cancel Challenge")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showCancelConfirm = false }) {
+                                            Text("Keep Challenge")
+                                        }
+                                    }
+                                )
                             }
                         }
                     } else {
@@ -525,17 +568,16 @@ fun LeaderboardRow(
         3 -> Color(0xFFB07A3A)
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
+    val meBg = if (entry.isMe) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+    val meTextColor = if (entry.isMe) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .padding(vertical = 6.dp)
-            .then(
-                if (entry.isMe) Modifier
-                    .background(SoftBlueLight, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                else Modifier.padding(horizontal = 8.dp)
-            ),
+            .padding(vertical = 4.dp)
+            .background(meBg, RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Surface(shape = CircleShape, color = medalColor, modifier = Modifier.size(28.dp)) {
@@ -554,12 +596,13 @@ fun LeaderboardRow(
                 text = (entry.displayName ?: "User ${entry.userId}") + if (entry.isMe) " (you)" else "",
                 fontWeight = if (entry.isMe) FontWeight.Bold else FontWeight.Medium,
                 style = MaterialTheme.typography.bodyMedium,
+                color = meTextColor,
             )
             if (entry.daily.isNotEmpty()) {
                 Text(
                     text = "Daily: ${entry.daily.joinToString(" · ") { ChallengeFormatters.formatSteps(it.value) }}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (entry.isMe) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -567,7 +610,7 @@ fun LeaderboardRow(
             text = ChallengeFormatters.formatTotal(metric, entry.total),
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.titleMedium,
-            color = if (entry.rank == 1) AccentOrange else SoftBlue,
+            color = if (entry.rank == 1) AccentOrange else meTextColor,
         )
     }
 }

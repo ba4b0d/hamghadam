@@ -217,6 +217,16 @@ def leave_challenge(db: Session, user: User, challenge_id: int, now: datetime) -
     return challenge
 
 
+def cancel_challenge(db: Session, user: User, challenge_id: int, now: datetime) -> None:
+    challenge = get_challenge(db, challenge_id, now)
+    if challenge.creator_id != user.id:
+        raise ChallengeError(403, "Only the creator can cancel this challenge")
+    if challenge.status == CHALLENGE_STATUS_ENDED:
+        raise ChallengeError(409, "Cannot cancel a challenge that has already ended")
+    db.delete(challenge)
+    db.commit()
+
+
 def update_challenge_status(
     db: Session,
     user: User,

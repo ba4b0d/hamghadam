@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.schemas.challenge import (
 from app.schemas.invite import InviteCreateRequest, InviteOut
 from app.services.challenge_service import (
     ChallengeError,
+    cancel_challenge,
     compute_leaderboard,
     create_challenge,
     get_challenge,
@@ -179,6 +180,20 @@ def leave(
     except ChallengeError as exc:
         _raise_challenge_error(exc)
     return _challenge_out(db, challenge, utcnow(), current_user)
+
+
+@router.delete("/{challenge_id}", status_code=status.HTTP_204_NO_CONTENT)
+def cancel_challenge_endpoint(
+    challenge_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Creator-only endpoint to cancel/delete a challenge before it has ended."""
+    try:
+        cancel_challenge(db, current_user, challenge_id, utcnow())
+    except ChallengeError as exc:
+        _raise_challenge_error(exc)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch("/{challenge_id}/status", response_model=ChallengeOut)
