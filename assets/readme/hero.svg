@@ -1,47 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="100%" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
   <title id="title">HamPa هم پا — Walk together. One app for every watch.</title>
-  <desc id="desc">HamGhadam unifies health data from Samsung, Google, Nothing and Fitbit watches through Health Connect, then turns steps into friendly challenges.</desc>
+  <desc id="desc">HamPa unifies health metrics from Samsung, Pixel, Fitbit and Nothing watches via Health Connect into friendly social challenges.</desc>
+
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FFBA08"/>
-      <stop offset="1" stop-color="#F15B2A"/>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#181513"/>
+      <stop offset="100%" stop-color="#0D0B0A"/>
     </linearGradient>
-    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFE9A8"/>
-      <stop offset="1" stop-color="#FFD166"/>
+    <linearGradient id="emberGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFBA08"/>
+      <stop offset="100%" stop-color="#F15B2A"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#28221E"/>
+      <stop offset="100%" stop-color="#1E1A17"/>
     </linearGradient>
   </defs>
 
-  <!-- Warm rounded backdrop -->
-  <rect x="20" y="20" width="1160" height="400" rx="48" fill="url(#bg)"/>
+  <!-- Background -->
+  <rect width="1200" height="440" rx="24" fill="url(#bgGradient)" stroke="#332B25" stroke-width="2"/>
 
-  <!-- Motif — two friends walking in step (from hamghadam-logo.svg, mirrored right block) -->
-  <g fill="url(#light)" opacity="0.28">
-    <path d="M90 300 C60 332 50 384 82 408 C96 419 116 423 134 412 C169 392 182 338 174 300 Z" transform="rotate(-14 126 356)"/>
-    <path d="M178 232 C148 264 138 316 170 340 C184 351 204 355 222 344 C248 322 256 288 250 250 Z" transform="rotate(6 212 300)"/>
+  <!-- Hero Content Left -->
+  <g transform="translate(60, 60)">
+    <!-- Category Tag -->
+    <rect width="280" height="32" rx="16" fill="#2A211B" stroke="#4A372C" stroke-width="1"/>
+    <text x="16" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#FFBA08" letter-spacing="1">ANDROID · HEALTH CONNECT · FASTAPI</text>
+
+    <!-- Project Title -->
+    <text x="0" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="56" font-weight="900" fill="#FFFFFF">HamPa <tspan fill="url(#emberGrad)">هم پا</tspan></text>
+
+    <!-- Tagline -->
+    <text x="0" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" fill="#E5DDD5">Walk together. One app for every watch.</text>
+
+    <!-- Description -->
+    <text x="0" y="190" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="400" fill="#A3988E">Unifies steps, distance (km), &amp; calories from Samsung, Pixel &amp; Fitbit</text>
+    <text x="0" y="215" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="400" fill="#A3988E">into live social challenges, FCM push alerts, &amp; 1-tap story sharing.</text>
+
+    <!-- Feature Pills -->
+    <g transform="translate(0, 255)">
+      <!-- Pill 1 -->
+      <rect x="0" y="0" width="130" height="36" rx="18" fill="url(#emberGrad)"/>
+      <text x="65" y="23" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">📍 5.0 km</text>
+
+      <!-- Pill 2 -->
+      <rect x="142" y="0" width="145" height="36" rx="18" fill="#2D2520" stroke="#4D3E35" stroke-width="1"/>
+      <text x="214" y="23" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#FFBA08">👟 10k Steps</text>
+
+      <!-- Pill 3 -->
+      <rect x="299" y="0" width="140" height="36" rx="18" fill="#2D2520" stroke="#4D3E35" stroke-width="1"/>
+      <text x="369" y="23" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#FF8C66">🔥 600 kcal</text>
+    </g>
   </g>
-  <g fill="url(#light)" opacity="0.95">
-    <path d="M860 316 C830 348 820 400 852 424 C866 435 886 439 904 428 C939 408 952 354 944 316 Z" transform="rotate(-14 896 372)"/>
-    <path d="M948 248 C918 280 908 332 940 356 C954 367 974 371 992 360 C1018 338 1026 304 1020 266 Z" transform="rotate(6 982 304)"/>
+
+  <!-- Hero Content Right (Card Specimen) -->
+  <g transform="translate(680, 50)">
+    <rect width="460" height="340" rx="20" fill="url(#cardGrad)" stroke="#443830" stroke-width="2"/>
+
+    <!-- Header bar -->
+    <rect x="24" y="24" width="412" height="44" rx="12" fill="#2B231E"/>
+    <circle cx="48" cy="46" r="8" fill="#F15B2A"/>
+    <text x="68" y="51" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF">LIVE LEADERBOARD</text>
+    <rect x="330" y="36" width="90" height="22" rx="11" fill="#F15B2A" opacity="0.2"/>
+    <text x="375" y="51" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#F15B2A">● LIVE</text>
+
+    <!-- Leaderboard Row 1 -->
+    <rect x="24" y="82" width="412" height="60" rx="12" fill="#3D2F27" stroke="#F15B2A" stroke-width="1.5"/>
+    <circle cx="54" cy="112" r="14" fill="#FFBA08"/>
+    <text x="54" y="117" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#1E1A17">1</text>
+    <text x="84" y="110" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF">Barbad (you)</text>
+    <text x="84" y="128" font-family="-apple-system, sans-serif" font-size="12" fill="#FFBA08">9.40 km · 620 kcal</text>
+    <text x="416" y="117" text-anchor="end" font-family="-apple-system, sans-serif" font-size="16" font-weight="900" fill="#FFBA08">12,500</text>
+
+    <!-- Leaderboard Row 2 -->
+    <rect x="24" y="154" width="412" height="56" rx="12" fill="#241D19"/>
+    <circle cx="54" cy="182" r="14" fill="#9AA0A6"/>
+    <text x="54" y="187" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#1E1A17">2</text>
+    <text x="84" y="180" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E5DDD5">Ali</text>
+    <text x="84" y="197" font-family="-apple-system, sans-serif" font-size="12" fill="#A3988E">7.50 km · 490 kcal</text>
+    <text x="416" y="187" text-anchor="end" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#E5DDD5">10,000</text>
+
+    <!-- Leaderboard Row 3 -->
+    <rect x="24" y="222" width="412" height="56" rx="12" fill="#241D19"/>
+    <circle cx="54" cy="250" r="14" fill="#B07A3A"/>
+    <text x="54" y="255" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#1E1A17">3</text>
+    <text x="84" y="248" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E5DDD5">Sara</text>
+    <text x="84" y="265" font-family="-apple-system, sans-serif" font-size="12" fill="#A3988E">5.20 km · 340 kcal</text>
+    <text x="416" y="255" text-anchor="end" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#E5DDD5">7,200</text>
+
+    <!-- Footer link -->
+    <text x="230" y="310" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#F15B2A">📲 1-Tap Story Share · Health Connect Sync</text>
   </g>
-
-  <!-- Shared step line -->
-  <path d="M150 412 C400 380 800 380 1050 412" fill="none" stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="1058" cy="264" r="12" fill="#FFFFFF" opacity="0.85"/>
-  <circle cx="1104" cy="252" r="8" fill="#FFFFFF" opacity="0.55"/>
-  <circle cx="1090" cy="312" r="7" fill="#FFFFFF" opacity="0.5"/>
-
-  <!-- Copy -->
-  <text x="70" y="120" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="64" font-weight="700" fill="#2A1E16" letter-spacing="0.5">HamGhadam <tspan fill="#FFFFFF">همقدم</tspan></text>
-  <text x="72" y="196" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="34" font-weight="500" fill="#2A1E16">Walk together. One app for every watch.</text>
-  <text x="72" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" fill="#2A1E16" opacity="0.85">Steps from Samsung, Google, Nothing &amp; Fitbit — unified through Health Connect,</text>
-  <text x="72" y="302" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" fill="#2A1E16" opacity="0.85">then turned into friendly step challenges with live leaderboards and push alerts.</text>
-
-  <!-- Small stat chips -->
-  <rect x="72" y="336" width="196" height="56" rx="28" fill="#2A1E16" opacity="0.9"/>
-  <text x="170" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#FFFFFF">Health Connect</text>
-  <rect x="288" y="336" width="150" height="56" rx="28" fill="#FFFFFF" opacity="0.90"/>
-  <text x="363" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#F15B2A">FastAPI</text>
-  <rect x="458" y="336" width="170" height="56" rx="28" fill="#2A1E16" opacity="0.9"/>
-  <text x="543" y="372" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#FFFFFF">FCM Push</text>
 </svg>
