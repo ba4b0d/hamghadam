@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -264,32 +265,14 @@ private fun EmptyStateCard(
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(20.dp))
-            when {
-                possible -> {
-                    Button(
-                        onClick = onConnect,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = SoftBlue),
-                    ) {
-                        Icon(Icons.Filled.Watch, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Connect now")
-                    }
-                }
-                permissionsGranted -> {
-                    Text(
-                        "No data yet — grant access above, then refresh.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                else -> {
-                    Text(
-                        "Matchmaking is not available on this device — grant access below to start.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            Button(
+                onClick = onConnect,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            ) {
+                Icon(Icons.Filled.Watch, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Connect watch / Health Connect")
             }
             if (!permissionsGranted) {
                 Spacer(Modifier.height(8.dp))
@@ -306,27 +289,26 @@ private fun EmptyStateCard(
 @Composable
 private fun ConnectWatchCard(possible: Boolean, hasSources: Boolean, onConnect: () -> Unit) {
     Card(
+        onClick = onConnect,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SoftBlueLight),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Filled.Watch, contentDescription = null, tint = SoftBlue)
+            Icon(Icons.Filled.Watch, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text("Sources", fontWeight = FontWeight.SemiBold, color = SoftBlue)
+                Text("Sources", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                 Text(
-                    "Manage or add apps in Health Connect.",
+                    "Manage or add watch apps in Health Connect.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (possible) {
-                OutlinedButton(onClick = onConnect) { Text("Manage") }
-            }
+            OutlinedButton(onClick = onConnect) { Text("Manage") }
         }
     }
 }

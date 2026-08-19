@@ -89,6 +89,7 @@ fun ChallengesScreen(
     ) { /* permission result is non-blocking for in-app routing */ }
 
     LaunchedEffect(Unit) {
+        viewModel.refresh()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
