@@ -1,5 +1,6 @@
 """Friends API routes for social graph management."""
 
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,7 @@ from app.schemas.friendship import (
     PendingRequestOut,
 )
 from app.services import friend_service
+from app.services import fcm
 
 router = APIRouter(prefix="/friends", tags=["friends"])
 
@@ -25,6 +27,12 @@ def request_friend(
 ) -> FriendshipOut:
     target_id = payload.target_user_id or payload.addressee_id
     friendship = friend_service.send_friend_request(db, current_user, target_id)  # type: ignore[arg-type]
+    try:
+        sender = fcm.FcmSender()
+        name = current_user.display_name or current_user.email.split("@")[0]
+        fcm.notify_friend_request(db, sender, target_id, name, datetime.now(timezone.utc))
+    except Exception:
+        pass
     return FriendshipOut.model_validate(friendship)
 
 
@@ -35,6 +43,12 @@ def accept_friend(
     db: Session = Depends(get_db),
 ) -> FriendshipOut:
     friendship = friend_service.accept_friend_request(db, current_user, request_id)
+    try:
+        sender = fcm.FcmSender()
+        name = current_user.display_name or current_user.email.split("@")[0]
+        fcm.notify_friend_accepted(db, sender, friendship.requester_id, name, datetime.now(timezone.utc))
+    except Exception:
+        pass
     return FriendshipOut.model_validate(friendship)
 
 

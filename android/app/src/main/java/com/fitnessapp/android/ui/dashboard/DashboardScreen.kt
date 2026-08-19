@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.Button
@@ -355,16 +356,20 @@ private fun DailySummaryCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MetricMiniCard(
-                        label = "Sleep",
-                        value = summary.sleepSeconds?.let { DashboardFormatters.formatDuration(it) } ?: "—",
+                        label = "Distance 📍",
+                        value = "%.2f km".format(summary.steps * 0.000752),
                         modifier = Modifier.weight(1f),
                     )
                     MetricMiniCard(
-                        label = "Avg HR (Test)",
-                        value = summary.avgHr?.let { "%.0f bpm".format(it) } ?: "—",
-                        onClick = onOpenHrTest,
+                        label = "Calories 🔥",
+                        value = "%.0f kcal".format(summary.steps * 0.04),
+                        modifier = Modifier.weight(1f),
+                    )
+                    MetricMiniCard(
+                        label = "Sleep 😴",
+                        value = summary.sleepSeconds?.let { DashboardFormatters.formatDuration(it) } ?: "—",
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -390,20 +395,40 @@ private fun DailySummaryCard(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = onRefresh, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text("Refresh")
                     }
                     Button(onClick = onSyncNow, modifier = Modifier.weight(1f)) {
                         if (state.syncing) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
                         } else {
-                            Icon(Icons.Filled.Sync, contentDescription = null)
+                            Icon(Icons.Filled.Sync, contentDescription = null, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(Modifier.width(6.dp))
-                        Text("Sync now")
+                        Spacer(Modifier.width(4.dp))
+                        Text("Sync")
+                    }
+                    val context = LocalContext.current
+                    Button(
+                        onClick = {
+                            summary.let {
+                                com.fitnessapp.android.ui.share.ShareStoryHelper.shareDailyProgressStory(
+                                    context = context,
+                                    displayName = null,
+                                    steps = it.steps,
+                                    distanceKm = it.steps * 0.000752,
+                                    caloriesKcal = (it.steps * 0.04).toInt(),
+                                )
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    ) {
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Story 📲")
                     }
                 }
             }

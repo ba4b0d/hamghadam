@@ -54,6 +54,24 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(themeMode = mode) }
     }
 
+    fun deleteAccount(onDeleted: () -> Unit) {
+        val token = container.authStore.jwt ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+            when (val result = container.apiClient.deleteAccount(token)) {
+                is ApiResult.Success -> {
+                    container.authStore.clearSession()
+                    _state.update { ProfileUiState() }
+                    onDeleted()
+                }
+                is ApiResult.Failure -> {
+                    _state.update { it.copy(isLoading = false, error = "Failed to delete account: ${result.detail}") }
+                }
+                else -> _state.update { it.copy(isLoading = false, error = "Failed to delete account") }
+            }
+        }
+    }
+
     fun loadProfile() {
         val token = container.authStore.jwt ?: return
         viewModelScope.launch {

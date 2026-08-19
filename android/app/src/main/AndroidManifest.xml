@@ -67,6 +67,16 @@
             android:name=".data.fcm.DebugFcmSimulatorReceiver"
             android:exported="true" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Required by the Health Connect controller before it shows its consent UI. -->
         <activity
             android:name=".permissions.PermissionsRationaleActivity"

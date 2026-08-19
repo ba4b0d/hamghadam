@@ -337,8 +337,42 @@ def notify_beat_you(
     overtaken_user_id: int,
     opponent_display_name: str | None,
     now: datetime,
-) -> SendResult | None:
-    return send_to_user(
+) -> None:
+    send_to_user(
         db, sender, overtaken_user_id, PUSH_TYPE_BEAT_YOU,
         build_beat_you(challenge, opponent_display_name), now,
     )
+
+
+def build_friend_request(requester_name: str) -> dict[str, Any]:
+    return {
+        "title": "New Friend Request 👥",
+        "body": f"{requester_name} sent you a friend request on HamGhadam!",
+        "data": {
+            "type": "friend_request",
+            "deep_link": "fitnessapp://friends",
+        },
+    }
+
+
+def build_friend_accepted(friend_name: str) -> dict[str, Any]:
+    return {
+        "title": "Friend Request Accepted 🎉",
+        "body": f"{friend_name} accepted your friend request!",
+        "data": {
+            "type": "friend_accepted",
+            "deep_link": "fitnessapp://friends",
+        },
+    }
+
+
+def notify_friend_request(
+    db: Session, sender: FcmSender, recipient_id: int, requester_name: str, now: datetime
+) -> None:
+    send_to_user(db, sender, recipient_id, "friend_request", build_friend_request(requester_name), now)
+
+
+def notify_friend_accepted(
+    db: Session, sender: FcmSender, recipient_id: int, friend_name: str, now: datetime
+) -> None:
+    send_to_user(db, sender, recipient_id, "friend_accepted", build_friend_accepted(friend_name), now)

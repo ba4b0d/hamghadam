@@ -442,6 +442,19 @@ class ApiClient(private val baseUrlProvider: () -> String) {
             }
         }
 
+    suspend fun deleteAccount(token: String): ApiResult<Unit> =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${base()}/users/me")
+                .addHeader("Authorization", "Bearer $token")
+                .delete()
+                .build()
+            when (val r = executeJson(request)) {
+                is Raw.Success -> ApiResult.Success(Unit, r.code)
+                is Raw.Error -> r.asApiResult()
+            }
+        }
+
     suspend fun updateProfile(
         token: String,
         displayName: String? = null,
