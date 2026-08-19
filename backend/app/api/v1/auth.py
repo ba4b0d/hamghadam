@@ -136,9 +136,10 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)) -> To
         user = db.scalar(select(User).where(User.email == email))
         if user is not None:
             user.google_id = google_id
-            if not user.avatar_url and picture:
+            if picture and not user.avatar_url:
                 user.avatar_url = picture
-            if not user.display_name and name:
+            is_generic_name = not user.display_name or user.display_name in ("Android user", "user", "") or user.display_name == user.email.split("@")[0]
+            if name and is_generic_name:
                 user.display_name = name
             user.auth_provider = "google" if user.auth_provider == "email" else user.auth_provider
             db.commit()
@@ -158,12 +159,13 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)) -> To
             db.commit()
             db.refresh(user)
     else:
-        # Update avatar or name if provided and user doesn't have custom ones set
+        # Update avatar or name if provided and user has generic name
         changed = False
         if picture and not user.avatar_url:
             user.avatar_url = picture
             changed = True
-        if name and not user.display_name:
+        is_generic_name = not user.display_name or user.display_name in ("Android user", "user", "") or user.display_name == user.email.split("@")[0]
+        if name and is_generic_name:
             user.display_name = name
             changed = True
         if changed:

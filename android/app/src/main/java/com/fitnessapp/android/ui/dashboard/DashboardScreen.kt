@@ -121,7 +121,9 @@ fun DashboardContent(
 
         when (state.hcStatus) {
             HcStatus.AVAILABLE -> {
-                PermissionCard(state, onGrant)
+                if (state.missingPermissions.isNotEmpty()) {
+                    PermissionCard(state, onGrant)
+                }
                 val hasAnyData = !state.summary?.sourceApps.isNullOrEmpty() &&
                     (state.summary?.steps ?: 0L) > 0
                 if (hasAnyData) {
