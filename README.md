@@ -33,10 +33,9 @@ HamPa solves that with **one source of truth**: it reads every watch ecosystem t
 ## 📸 Screenshots & Showcase
 
 <p align="center">
-  <img src="./docs/qa/evidence/v11_dashboard_sleep_hr.png" width="24%" alt="Dashboard showing steps, sleep and distance">
-  <img src="./docs/qa/evidence/v11_hr_test_screen.png" width="24%" alt="Heart rate test screen reading Health Connect">
-  <img src="./docs/qa/evidence/v11_challenges_list.png" width="24%" alt="List of active and upcoming challenges">
-  <img src="./docs/qa/evidence/v11_challenge_leaderboard_sleep.png" width="24%" alt="Challenge leaderboard">
+  <img src="./docs/qa/evidence/hampa_v07_dashboard.png" width="31%" alt="HamPa Dashboard with steps, distance, calories, sleep and story share">
+  <img src="./docs/qa/evidence/hampa_v07_create_challenge.png" width="31%" alt="Full-Screen Challenge Creator with realistic presets">
+  <img src="./docs/qa/evidence/hampa_v07_leaderboard.png" width="31%" alt="Challenge Leaderboard with dark theme contrast & metrics">
 </p>
 
 ---
