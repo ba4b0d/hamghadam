@@ -142,7 +142,6 @@ fun DashboardContent(
                         onGrant = onGrant,
                     )
                 }
-                SyncStatusLine(syncLine)
             }
             HcStatus.UNAVAILABLE -> UnavailableCard("Health Connect is not installed on this device.")
             HcStatus.PROVIDER_UPDATE_REQUIRED -> UnavailableCard("Health Connect needs an update. Open the Play Store to update it.")
